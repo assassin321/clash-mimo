@@ -16,8 +16,8 @@ jobs:
       portable: true
       nightly: false
       bundle-type: 'both'
+      arch: 'x86_64'
       tag: ${{ github.event.release.tag_name }}
-      arch: x86_64  # 新增
     secrets: inherit
 
   linux_build:
