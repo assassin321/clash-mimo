@@ -1,0 +1,25 @@
+pub mod candy;
+pub mod color;
+pub mod config;
+pub mod dialog;
+pub mod dirs;
+pub mod help;
+pub mod init;
+pub mod path;
+pub mod resolve;
+// mod winhelp;
+pub mod hwid;
+#[cfg(windows)]
+pub mod winreg;
+
+pub mod collect;
+pub mod net;
+
+pub mod open;
+
+pub mod dock;
+pub mod sudo;
+
+#[cfg(test)]
+#[cfg(windows)]
+mod winreg_test;

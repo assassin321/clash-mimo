@@ -1,0 +1,43 @@
+import { AnimatedOutletPreset } from '@/components/router/animated-outlet'
+import { AppContentScrollArea } from '@/components/ui/scroll-area'
+import { Sidebar, SidebarContent } from '@/components/ui/sidebar'
+import { cn } from '@nyanpasu/utils'
+import { createFileRoute } from '@tanstack/react-router'
+import SettingsNavigate from './_modules/settings-navigate'
+
+export const Route = createFileRoute('/(main)/main/settings')({
+  component: RouteComponent,
+})
+
+function RouteComponent() {
+  return (
+    <Sidebar data-slot="settings-container">
+      <SidebarContent
+        className="bg-surface-variant/10 [&>div>div]:block!"
+        data-slot="settings-sidebar-scroll-area"
+      >
+        <SettingsNavigate />
+      </SidebarContent>
+
+      <AppContentScrollArea
+        className={cn(
+          'group/settings-content flex-[3_1_auto]',
+          // for AnimatedOutletPreset transition to work properly,
+          // the scroll area must have overflow: clip
+          'overflow-clip',
+        )}
+        data-slot="settings-content-scroll-area"
+      >
+        <div
+          className={cn(
+            'container mx-auto w-full max-w-7xl',
+            'flex min-h-full flex-col [&>div]:flex [&>div]:flex-1 [&>div]:flex-col',
+          )}
+          data-slot="settings-content"
+        >
+          <AnimatedOutletPreset />
+        </div>
+      </AppContentScrollArea>
+    </Sidebar>
+  )
+}

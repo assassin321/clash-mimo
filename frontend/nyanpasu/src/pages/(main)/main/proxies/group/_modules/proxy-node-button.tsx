@@ -1,0 +1,111 @@
+import FlashOnRounded from '~icons/material-symbols/flash-on-rounded'
+import { ComponentProps, MouseEvent, useMemo } from 'react'
+import { useBlockTask } from '@/components/providers/block-task-provider'
+import DelayChip from '@/components/proxies/delay-chip'
+import { Button } from '@/components/ui/button'
+import { useLockFn } from '@/hooks/use-lock-fn'
+import { ClashProxiesQueryProxyItem } from '@nyanpasu/interface'
+import { cn } from '@nyanpasu/utils'
+
+function FeatureChip({
+  label,
+  variant = 'feature',
+}: {
+  label: string
+  variant?: 'type' | 'feature'
+}) {
+  return (
+    <span
+      className={cn(
+        'shrink-0 rounded px-1.5 py-0.5 text-[9px] leading-none font-medium uppercase',
+        variant === 'type'
+          ? 'bg-primary/10 text-primary'
+          : 'bg-secondary-container text-on-secondary-container',
+      )}
+    >
+      {label}
+    </span>
+  )
+}
+
+export default function ProxyNodeButton({
+  proxy,
+  ...props
+}: Omit<ComponentProps<typeof Button>, 'onClick' | 'children'> & {
+  proxy: ClashProxiesQueryProxyItem
+}) {
+  const handleSelectProxy = useLockFn(async () => {
+    await proxy.mutateSelect()
+  })
+
+  const delayTask = useBlockTask(
+    `proxy-delay-check-${proxy.name.toLowerCase()}`,
+    async () => {
+      await proxy.mutateDelay()
+    },
+  )
+
+  const handleDelayClick = useLockFn(
+    async (e: MouseEvent<HTMLButtonElement>) => {
+      e.preventDefault()
+      e.stopPropagation()
+
+      await delayTask.execute()
+    },
+  )
+
+  const currentDelay = useMemo(() => {
+    if (!proxy.history || proxy.history.length === 0) {
+      return -1
+    } else {
+      return proxy.history[proxy.history.length - 1].delay
+    }
+  }, [proxy.history])
+
+  return (
+    <Button
+      variant="fab"
+      className={cn(
+        'flex w-full flex-col justify-center gap-1 px-2 text-left',
+        'group-data-[active=true]:bg-primary-container/75',
+        'dark:group-data-[active=true]:bg-surface-variant/50',
+        'group-data-[active=false]:bg-on-background/3',
+        'dark:group-data-[active=false]:bg-surface/30',
+        'group-data-[active=false]:shadow-none',
+        'group-data-[active=false]:hover:shadow-none',
+        'group-data-[active=false]:hover:bg-surface-variant/30',
+      )}
+      onClick={handleSelectProxy}
+      {...props}
+    >
+      <div className="flex items-center gap-2 px-2">
+        <div className="truncate text-sm font-medium">{proxy.name}</div>
+      </div>
+
+      <div className="flex w-full items-center justify-between gap-2 overflow-hidden px-2">
+        <div className="flex items-center gap-1 overflow-hidden">
+          <FeatureChip label={proxy.type} variant="type" />
+          {proxy.udp && <FeatureChip label="UDP" />}
+          {proxy.xudp && <FeatureChip label="XUDP" />}
+          {proxy.tfo && <FeatureChip label="TFO" />}
+        </div>
+
+        <Button
+          className="grid h-4 min-w-10 shrink-0 place-content-center px-2 text-center"
+          variant="raised"
+          onClick={handleDelayClick}
+          loading={delayTask.isPending}
+          asChild
+        >
+          {currentDelay > 0 ? (
+            <DelayChip delay={currentDelay} />
+          ) : (
+            <span>
+              <FlashOnRounded className="py-1" />
+            </span>
+          )}
+        </Button>
+      </div>
+    </Button>
+  )
+}
