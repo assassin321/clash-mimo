@@ -1,3 +1,29 @@
+## [1.6.4] - 2026-08-09
+
+### ✨ Features
+
+🎨 Interface Redesign
+
+Completely refreshed visual style with unified design language
+
+Optimized navigation bar layout for more intuitive operation
+
+Improved mobile bottom navigation for better touch experience
+
+⚡ Interaction Improvements
+
+Restructured navigation logic for smoother page transitions
+
+Simplified menu hierarchy with frequently used features at your fingertips
+
+Enhanced responsive layout for better multi-device adaptation
+
+### 🐛 Bug Fixes
+
+Fixed various known issues to improve stability
+
+Resolved CI/CD configuration errors in the build pipeline
+
 ## [1.6.1] - 2024-09-07
 
 ### ✨ Features
