@@ -1,6 +1,7 @@
 name: '[Entire] Build Developer Version'
 
 on:
+  workflow_dispatch:
   release:
     types: [published]
 
