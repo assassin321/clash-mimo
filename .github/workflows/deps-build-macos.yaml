@@ -124,9 +124,9 @@ jobs:
         run: |
           pnpm tauri build --verbose -f default-meta ${{ inputs.aarch64 == true && '--target aarch64-apple-darwin' || '--target x86_64-apple-darwin' }}
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
-          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}          
+          TAURI_SIGNING_PRIVATE_KEY: ""           # 置空
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ""  # 置空
           NIGHTLY: ${{ inputs.nightly == true  && 'true' || 'false' }}
           NODE_OPTIONS: '--max_old_space_size=4096'
       - name: Build Clash Mimo (Nightly)
@@ -134,9 +134,9 @@ jobs:
         run: |
           pnpm build:nightly --verbose ${{ inputs.aarch64 == true && '--target aarch64-apple-darwin' || '--target x86_64-apple-darwin' }}
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
-          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}          
+          TAURI_SIGNING_PRIVATE_KEY: ""           # 置空
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ""  # 置空
           NIGHTLY: ${{ inputs.nightly == true  && 'true' || 'false' }}
           NODE_OPTIONS: '--max_old_space_size=4096'
 
