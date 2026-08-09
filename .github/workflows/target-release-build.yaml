@@ -5,9 +5,10 @@ on:
     types: [published]
 
 permissions:
-  contents: write    # 允许上传 Release 资产、创建 tag 等
-  discussions: write # 如果子 workflow 需要写讨论
-
+  contents: write
+  discussions: write
+  id-token: write
+  
 env:
   CARGO_INCREMENTAL: 0
   RUST_BACKTRACE: short
