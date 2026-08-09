@@ -1,4 +1,4 @@
-<<h3>Clash Mimo</h3>
+<h3>Clash Mimo</h3>
 
 <h3>
   A <a href="https://github.com/Dreamacro/clash">Clash</a> GUI based on <a href="https://github.com/tauri-apps/tauri">Tauri</a>.
