@@ -8,7 +8,7 @@ use serde_yaml::{
 
 pub static MIGRATOR: ProfilesMigrator = ProfilesMigrator;
 
-static VERSION_2_0_0: Lazy<Version> = Lazy::new(|| Version::parse("1.6.4").unwrap());
+static VERSION_2_0_0: Lazy<Version> = Lazy::new(|| Version::parse("1.6.3").unwrap());
 static NULL_VALUE: MigrateProfilesNullValue = MigrateProfilesNullValue;
 static SCRIPT_NEWTYPE: MigrateProfileScriptNewtype = MigrateProfileScriptNewtype;
 static CLEAN_SCHEMA: MigrateProfilesCleanSchema = MigrateProfilesCleanSchema;

@@ -47,7 +47,7 @@
       "sidecar/meow",
       "sidecar/nyanpasu-service"
     ],
-    "copyright": "Copyright © 2024-2026 LibNyanpasu",
+    "copyright": "Copyright © 2026 assassin321",
     "category": "DeveloperTool",
     "shortDescription": "Clash Mimo",
     "longDescription": "Clash Mimo",
@@ -73,16 +73,9 @@
     "devUrl": "http://localhost:3000/"
   },
   "productName": "Clash Mimo",
-  "version": "1.6.4",
+  "version": "1.6.3",
   "identifier": "mimo.clash.app",
-  "plugins": {
-    "updater": {
-      "pubkey": "",
-      "endpoints": [
-        "https://github.com/assassin321/clash-mimo/releases/download/updater/update.json"
-      ]
-    }
-  },
+  "plugins": {},
   "app": {
     "windows": [],
     "security": {

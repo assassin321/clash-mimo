@@ -221,7 +221,7 @@ mod tests {
         let path = temp.path().join(STORE_FILE_NAME);
 
         let mut store = MigrationStore::default();
-        store.set_last_succeeded(Version::parse("1.6.4").unwrap());
+        store.set_last_succeeded(Version::parse("1.6.3").unwrap());
         store.flush_atomic(&path).unwrap();
 
         store.modules.insert(
@@ -252,7 +252,7 @@ mod tests {
         TaskRecord {
             module: module.to_string(),
             revision,
-            introduced_in: Version::parse("1.6.4").unwrap(),
+            introduced_in: Version::parse("1.6.3").unwrap(),
             state: MigrationState::Completed,
             started_at: None,
             finished_at: None,
