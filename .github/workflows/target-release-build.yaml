@@ -1,0 +1,47 @@
+name: '[Entire] Build Release Version'
+
+on:
+  release:
+    types: [published]
+
+env:
+  CARGO_INCREMENTAL: 0
+  RUST_BACKTRACE: short
+
+jobs:
+  windows_x86_64_build:
+    name: Windows x86_64 Build
+    uses: ./.github/workflows/deps-build-windows-nsis.yaml
+    with:
+      portable: true        # 打便携版
+      nightly: false
+      bundle-type: 'both'   # 同时出 standard 和 fixed-webview 两种
+      arch: 'x86_64'
+      tag: ${{ github.event.release.tag_name }}
+    secrets: inherit
+
+  windows_aarch64_build:
+    name: Windows aarch64 Build
+    uses: ./.github/workflows/deps-build-windows-nsis.yaml
+    with:
+      portable: true
+      nightly: false
+      bundle-type: 'both'
+      arch: 'aarch64'
+      tag: ${{ github.event.release.tag_name }}
+    secrets: inherit
+
+  upload_release_assets:
+    name: Upload Release Assets
+    needs: [windows_x86_64_build, windows_aarch64_build]
+    uses: ./.github/workflows/deps-upload-release-assets.yaml
+    with:
+      tag: ${{ github.event.release.tag_name }}
+
+  updater:
+    name: Create Updater
+    needs: [upload_release_assets]
+    uses: ./.github/workflows/deps-create-updater.yaml
+    with:
+      nightly: false
+    secrets: inherit
