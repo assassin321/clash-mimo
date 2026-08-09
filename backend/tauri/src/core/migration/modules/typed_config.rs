@@ -13,7 +13,7 @@ use std::path::Path;
 
 pub static MIGRATOR: TypedConfigMigrator = TypedConfigMigrator;
 
-static VERSION_2_0_0: Lazy<Version> = Lazy::new(|| Version::parse("1.6.3").unwrap());
+static VERSION_2_0_0: Lazy<Version> = Lazy::new(|| Version::parse("1.6.4").unwrap());
 static SPLIT_LEGACY_CONFIG: SplitLegacyConfig = SplitLegacyConfig;
 static REPAIR_CLASH_CONFIG_PATH: RepairClashConfigPath = RepairClashConfigPath;
 static STEPS: [&dyn MigrationStep; 2] = [&SPLIT_LEGACY_CONFIG, &REPAIR_CLASH_CONFIG_PATH];

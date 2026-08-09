@@ -5,6 +5,11 @@ on:
   release:
     types: [published]
 
+permissions:
+  contents: write
+  discussions: write
+  id-token: write
+
 concurrency:
   group: dev-build
   cancel-in-progress: true
