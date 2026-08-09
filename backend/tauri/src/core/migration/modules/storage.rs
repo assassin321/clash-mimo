@@ -6,7 +6,7 @@ use serde_yaml::Mapping;
 
 pub static MIGRATOR: StorageMigrator = StorageMigrator;
 
-static VERSION_2_0_0: Lazy<Version> = Lazy::new(|| Version::parse("1.6.4").unwrap());
+static VERSION_2_0_0: Lazy<Version> = Lazy::new(|| Version::parse("1.6.3").unwrap());
 static HOTKEYS_TO_KV: MigrateHotkeysToKv = MigrateHotkeysToKv;
 static STEPS: [&dyn MigrationStep; 1] = [&HOTKEYS_TO_KV];
 
