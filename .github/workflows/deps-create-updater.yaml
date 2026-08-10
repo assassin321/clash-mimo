@@ -25,7 +25,7 @@ on:
         type: string
     secrets:
       SURGE_TOKEN:
-        required: true
+        required: false
 
 jobs:
   updater:

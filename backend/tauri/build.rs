@@ -42,7 +42,7 @@ fn main() {
         let default_hash = "unknown".to_string();
         let default_author = "unknown".to_string();
         let default_date = Utc::now().to_rfc3339_opts(SecondsFormat::Millis, true);
-        
+
         let (hash, author, date) = match Command::new("git")
             .args([
                 "show",
@@ -67,7 +67,7 @@ fn main() {
             }
             Err(_) => (default_hash, default_author, default_date),
         };
-        
+
         (hash, author, date)
     };
     println!("cargo:rustc-env=COMMIT_HASH={commit_hash}");

@@ -8,5 +8,11 @@
       }
     }
   },
-  "plugins": {}
+  "plugins": {
+    "updater": {
+      "endpoints": [
+        "https://github.com/assassin321/clash-mimo/releases/download/updater/update-fixed-webview.json"
+      ]
+    }
+  }
 }
