@@ -5,7 +5,7 @@ use serde_yaml::{Mapping, Value};
 
 pub static MIGRATOR: AppConfigMigrator = AppConfigMigrator;
 
-static VERSION_2_0_0: Lazy<Version> = Lazy::new(|| Version::parse("1.6.4").unwrap());
+static VERSION_2_0_0: Lazy<Version> = Lazy::new(|| Version::parse("1.6.3").unwrap());
 static LANGUAGE_OPTION: MigrateLanguageOption = MigrateLanguageOption;
 static THEME_SETTING: MigrateThemeSetting = MigrateThemeSetting;
 static NET_STAT_WIDGET_FLATTEN: MigrateNetworkStatisticWidgetFlatten =

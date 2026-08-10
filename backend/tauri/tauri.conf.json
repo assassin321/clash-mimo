@@ -63,8 +63,7 @@
         "depends": []
       }
     },
-    "licenseFile": "../../LICENSE",
-    "createUpdaterArtifacts": "v1Compatible"
+    "licenseFile": "../../LICENSE"
   },
   "build": {
     "beforeBuildCommand": "pnpm run-p web:build generate:git-info && echo $(pwd)",
@@ -73,15 +72,9 @@
     "devUrl": "http://localhost:3000/"
   },
   "productName": "Clash Mimo",
-  "version": "1.6.4",
+  "version": "1.6.3",
   "identifier": "mimo.clash.app",
-  "plugins": {
-    "updater": {
-      "endpoints": [
-        "https://github.com/assassin321/clash-mimo/releases/download/updater/update.json"
-      ]
-    }
-  },
+  "plugins": {},
   "app": {
     "windows": [],
     "security": {
