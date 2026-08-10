@@ -309,6 +309,19 @@ export const commands = {
     typedError<null, string>(
       __TAURI_INVOKE('clear_clash_ws_history', { kind }),
     ),
+  checkUpdate: () =>
+    typedError<
+      {
+        rid: number
+        available: boolean
+        current_version: string
+        version: string
+        date: string | null
+        body: string | null
+        raw_json: any
+      } | null,
+      string
+    >(__TAURI_INVOKE('check_update')),
   saveWindowSizeState: (label: string) =>
     typedError<null, string>(
       __TAURI_INVOKE('save_window_size_state', { label }),

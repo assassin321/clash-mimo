@@ -135,7 +135,7 @@ pub struct NyanpasuAppConfig {
     pub max_log_files: usize,
 
     /// Check update when app launch
-    pub enable_auto_check_update: false,
+    pub enable_auto_check_update: bool,
 
     /// 是否启用代理托盘选择
     #[patch(attribute(serde(alias = "clash_tray_selector")))]
@@ -204,7 +204,7 @@ impl Default for NyanpasuAppConfig {
             enable_builtin_enhanced: true,
             proxy_layout_column: 0,
             max_log_files: 7,
-            enable_auto_check_update: false,
+            enable_auto_check_update: true,
             tray_selector_mode: ProxiesSelectorMode::default(),
             always_on_top: false,
             tray_menu_mode: TrayMenuMode::default(),
