@@ -1,9 +1,9 @@
 {
   "$schema": "../../../node_modules/@tauri-apps/cli/config.schema.json",
-  "version": "1.6.3",
+  "version": "1.6.4",
   "plugins": {
     "updater": {
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDlBMUM0NjMxREZCNDRGMjYKUldRbVQ3VGZNVVljbW43N0FlWjA4UkNrbTgxSWxSSXJQcExXNkZjUTlTQkIyYkJzL0tsSWF2d0cK",
+      "pubkey": "",
       "endpoints": [
         "https://github.com/assassin321/clash-mimo/releases/download/updater/update-nightly.json"
       ]
