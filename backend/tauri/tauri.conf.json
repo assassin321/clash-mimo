@@ -72,7 +72,7 @@
     "devUrl": "http://localhost:3000/"
   },
   "productName": "Clash Mimo",
-  "version": "1.6.3",
+  "version": "1.6.4",
   "identifier": "mimo.clash.app",
   "plugins": {},
   "app": {
