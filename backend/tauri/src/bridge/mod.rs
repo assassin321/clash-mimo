@@ -86,7 +86,6 @@ fn application_patch_from_legacy_patch(
     set_if_some!(enable_builtin_enhanced, enable_builtin_enhanced);
     set_if_some!(proxy_layout_column, proxy_layout_column);
     set_if_some!(max_log_files, max_log_files);
-    set_if_some!(enable_auto_check_update, enable_auto_check_update);
     set_if_some!(always_on_top, always_on_top);
     set_if_some!(network_statistic_widget, network_statistic_widget);
     set_if_some!(enable_tray_text, enable_tray_text);

@@ -109,8 +109,6 @@ pub(crate) fn build_specta_builder() -> tauri_specta::Builder<tauri::Wry> {
             ipc::get_clash_ws_snapshot,
             ipc::set_clash_ws_recording,
             ipc::clear_clash_ws_history,
-            // updater layer
-            ipc::check_update,
             // window management
             ipc::save_window_size_state,
             ipc::create_main_window,

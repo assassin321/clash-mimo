@@ -12,7 +12,6 @@ import {
   useSetting,
 } from '@nyanpasu/interface'
 import packageJson from '@root/package.json'
-import { Update } from '@tauri-apps/plugin-updater'
 import { useBlockTask } from './block-task-provider'
 
 const NyanpasuUpdateContext = createContext<{

@@ -1,6 +1,6 @@
 {
   "name": "@nyanpasu/nyanpasu",
-  "version": "1.6.4",
+  "version": "1.6.3",
   "license": "GPL-3.0",
   "type": "module",
   "scripts": {
@@ -65,7 +65,6 @@
     "@tauri-apps/plugin-os": "2.3.2",
     "@tauri-apps/plugin-process": "2.3.1",
     "@tauri-apps/plugin-shell": "2.3.5",
-    "@tauri-apps/plugin-updater": "2.10.1",
     "@types/d3": "7.4.3",
     "@types/less": "3.0.8",
     "@types/react": "19.2.17",

@@ -2,8 +2,8 @@ name: '[Entire] Build Developer Version'
 
 on:
   workflow_dispatch:
-  release:
-    types: [published]
+  schedule:
+    - cron: '15 0 1 * *'
 
 permissions:
   contents: write

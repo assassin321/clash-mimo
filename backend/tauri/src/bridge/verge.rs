@@ -581,7 +581,7 @@ pub(crate) fn application_from_legacy(legacy: &IVerge) -> anyhow::Result<Nyanpas
         next.max_log_files = value;
     }
     if let Some(value) = legacy.enable_auto_check_update {
-        next.enable_auto_check_update = value;
+        next.enable_auto_check_update = false;
     }
     if let Some(value) = &legacy.clash_tray_selector
         && let Ok(value) = super::yaml_convert(value)
