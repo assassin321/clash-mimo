@@ -73,11 +73,11 @@
     "devUrl": "http://localhost:3000/"
   },
   "productName": "Clash Mimo",
-  "version": "1.6.4",
+  "version": "1.6.3",
   "identifier": "mimo.clash.app",
   "plugins": {
     "updater": {
-      "pubkey": "",
+      "pubkey": "null",
       "endpoints": [
         "https://github.com/assassin321/clash-mimo/releases/download/updater/update.json"
       ]
