@@ -20,7 +20,7 @@ pub static UNITS: Lazy<Vec<DynMigration>> = Lazy::new(|| {
     ]
 });
 
-pub static VERSION: Lazy<semver::Version> = Lazy::new(|| semver::Version::parse("1.6.6").unwrap());
+pub static VERSION: Lazy<semver::Version> = Lazy::new(|| semver::Version::parse("1.6.5").unwrap());
 
 #[derive(Debug, Clone)]
 pub struct MigrateProfilesNullValue;
