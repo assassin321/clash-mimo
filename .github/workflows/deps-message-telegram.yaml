@@ -1,0 +1,76 @@
+name: '[Single] Send Message to Telegram'
+
+on:
+  workflow_dispatch:
+    inputs:
+      nightly:
+        description: 'Nightly'
+        required: true
+        type: boolean
+        default: false
+
+      from-local:
+        description: 'Use per-build uploaded results instead of downloading from release'
+        required: false
+        type: boolean
+        default: false
+
+  workflow_call:
+    inputs:
+      nightly:
+        description: 'Nightly'
+        required: true
+        type: boolean
+        default: false
+
+      from-local:
+        description: 'Use per-build uploaded results instead of downloading from release'
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  telegram:
+    name: Notify Telegram
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Download upload results
+        if: ${{ inputs.from-local == true }}
+        uses: actions/download-artifact@v8
+        continue-on-error: true
+        with:
+          pattern: upload-results-*
+          path: ./upload-results
+          merge-multiple: false
+
+      - name: Send Releases
+        run: |
+          ARGS=""
+          if [ "${{ inputs.nightly }}" = "true" ]; then
+            ARGS="$ARGS --nightly"
+          fi
+          if [ "${{ inputs.from-local }}" = "true" ]; then
+            ARGS="$ARGS --from-local"
+          fi
+          deno run -A scripts/deno/telegram-notify.ts $ARGS
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_API_ID: ${{ secrets.TELEGRAM_API_ID }}
+          TELEGRAM_API_HASH: ${{ secrets.TELEGRAM_API_HASH }}
+          FILE_SERVER_TOKEN: ${{ secrets.FILE_SERVER_TOKEN }}
+          TELEGRAM_TO: '@keikolog'
+          TELEGRAM_TO_NIGHTLY: '@ClashMimo'
+          WORKFLOW_RUN_ID: ${{ github.run_id }}
+          UPLOAD_RESULTS_DIR: ./upload-results
