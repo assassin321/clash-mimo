@@ -1,0 +1,201 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - main
+      - dev
+      - release-*
+  push:
+    branches:
+      - main
+      - dev
+      - release-*
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: windows-latest  # 只跑 Windows
+    env:                     # 加环境变量
+      NODE_OPTIONS: '--max_old_space_size=4096'
+    steps:
+      - uses: actions/checkout@v7
+      
+      - name: Rust
+        run: |
+          rustup toolchain install nightly --profile minimal --no-self-update
+          rustup default nightly
+          rustup component add clippy rustfmt
+          rustc --version
+          cargo --version
+          rustup show
+
+      - uses: Swatinem/rust-cache@v2
+        name: Cache Rust dependencies
+        with:
+          workspaces: 'backend'
+          save-if: ${{ github.event_name == 'push' }}
+
+      - name: Install Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: latest
+
+      - uses: pnpm/action-setup@v6
+        name: Install pnpm
+        with:
+          run_install: false
+
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - uses: actions/cache@v6
+        name: Setup pnpm cache
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+          save-always: ${{ github.event_name == 'push' }}
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Prepare frontend
+        run: pnpm -r build
+
+      - name: Prepare sidecar and resources
+        run: pnpm prepare:check
+
+      - name: Lint
+        run: pnpm run-p lint:clippy lint:rustfmt
+
+  build:
+    name: Build Tauri
+    runs-on: windows-latest  # 只跑 Windows
+    if: >
+      github.event_name != 'pull_request' ||
+      contains(github.event.pull_request.title, 'crate') ||
+      github.event.pull_request.user.login != 'renovate[bot]'
+    needs: lint
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: latest
+
+      - name: Install Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - uses: Swatinem/rust-cache@v2
+        name: Cache Rust dependencies
+        with:
+          workspaces: 'backend'
+          save-if: ${{ github.event_name == 'push' }}
+
+      - uses: pnpm/action-setup@v6
+        name: Install pnpm
+        with:
+          run_install: false
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - uses: actions/cache@v6
+        name: Setup pnpm cache
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+          save-always: ${{ github.event_name == 'push' }}
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Prepare sidecar and resources
+        run: pnpm prepare:check
+
+      - name: Prepare frontend
+        run: pnpm -r build
+        env:
+          NODE_OPTIONS: '--max_old_space_size=4096'
+
+      - name: Build Backend
+        run: cargo build --release --manifest-path backend/Cargo.toml
+
+  test_unit:
+    name: Unit Test
+    needs: lint
+    if: >
+      github.event_name != 'pull_request' ||
+      contains(github.event.pull_request.title, 'crate') ||
+      github.event.pull_request.user.login != 'renovate[bot]'
+    runs-on: windows-latest  # 只跑 Windows
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: latest
+
+      - name: Install Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - uses: Swatinem/rust-cache@v2
+        name: Cache Rust dependencies
+        with:
+          workspaces: 'backend'
+          save-if: ${{ github.event_name == 'push' }}
+
+      - uses: pnpm/action-setup@v6
+        name: Install pnpm
+        with:
+          run_install: false
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - uses: actions/cache@v6
+        name: Setup pnpm cache
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+          save-always: ${{ github.event_name == 'push' }}
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Prepare sidecar and resources
+        run: pnpm prepare:check
+
+      - name: Prepare frontend
+        run: pnpm -r build
+        env:
+          NODE_OPTIONS: '--max_old_space_size=4096'
+
+      - name: Test
+        run: pnpm test

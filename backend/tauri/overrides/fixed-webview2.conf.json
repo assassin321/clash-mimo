@@ -1,0 +1,18 @@
+{
+  "$schema": "../../../node_modules/@tauri-apps/cli/config.schema.json",
+  "bundle": {
+    "windows": {
+      "webviewInstallMode": {
+        "type": "fixedRuntime",
+        "path": "SHOULD_BE_REPLACED_WITH_THE_PATH_TO_THE_FIXED_WEBVIEW"
+      }
+    }
+  },
+  "plugins": {
+    "updater": {
+      "endpoints": [
+        "https://github.com/assassin321/clash-mimo/releases/download/updater/update-fixed-webview.json"
+      ]
+    }
+  }
+}
