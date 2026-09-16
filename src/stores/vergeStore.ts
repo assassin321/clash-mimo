@@ -44,7 +44,7 @@ const pickPersistedMimo = (verge: IMimoConfig) =>
     }),
   ) as IMimoConfig;
 
-export const useMimoStore = create<MimoState & MimoActions>()(
+export const useVergeStore = create<MimoState & MimoActions>()(
   persist(
     (set, get) => ({
       verge: {},

@@ -16,7 +16,7 @@ import youtube from "@/assets/image/test/youtube.svg?raw";
 import { BasePage, SortableItem } from "@/components/base";
 import { TestItem } from "@/components/test/test-item";
 import { TestViewer, TestViewerRef } from "@/components/test/test-viewer";
-import { useMimoStore } from "@/stores";
+import { useVergeStore } from "@/stores";
 
 const DEFAULT_TEST_LIST = [
   {
@@ -49,10 +49,10 @@ type ISortableTestItem = IMimoTestItem & { id: string };
 
 const TestPage = () => {
   const { t } = useTranslation();
-  const testList = useMimoStore(
+  const testList = useVergeStore(
     useShallow((s) => s.verge.test_list ?? DEFAULT_TEST_LIST),
   );
-  const patchMimo = useMimoStore((s) => s.patchMimo);
+  const patchMimo = useVergeStore((s) => s.patchMimo);
 
   const [sortableTestList, setSortableTestList] = useState<ISortableTestItem[]>(
     [],
@@ -79,7 +79,7 @@ const TestPage = () => {
   };
 
   useEffect(() => {
-    if (!useMimoStore.getState().verge.test_list) {
+    if (!useVergeStore.getState().verge.test_list) {
       patchMimo({ test_list: testList });
     }
     const sortable = testList.map((item) => ({

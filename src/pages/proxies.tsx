@@ -8,12 +8,12 @@ import { BasePage } from "@/components/base";
 import { ProviderButton } from "@/components/proxy/provider-button";
 import { ProxyGroups } from "@/components/proxy/proxy-groups";
 import { useClashInfo } from "@/hooks/use-clash";
-import { useMimoStore } from "@/stores";
+import { useVergeStore } from "@/stores";
 
 const ProxyPage = () => {
   const { t } = useTranslation();
   const { clashInfo, patchInfo, mutateInfo } = useClashInfo();
-  const autoCloseConnection = useMimoStore(
+  const autoCloseConnection = useVergeStore(
     (s) => s.verge.auto_close_connection ?? true,
   );
 

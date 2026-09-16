@@ -33,7 +33,7 @@ import {
   getDefaultBypass,
   getSystemProxy,
 } from "@/services/cmds";
-import { useMimoStore } from "@/stores";
+import { useVergeStore } from "@/stores";
 import getSystem from "@/utils/get-system";
 
 const DEFAULT_PAC = `function FindProxyForURL(url, host) {
@@ -56,28 +56,28 @@ export const SysproxyViewer = forwardRef<DialogRef>((_props, ref) => {
   const [sysproxy, setSysproxy] = useState<SysProxy>();
   const [autoproxy, setAutoproxy] = useState<AutoProxy>();
 
-  const enableSystemProxy = useMimoStore(
+  const enableSystemProxy = useVergeStore(
     (s) => s.verge.enable_system_proxy ?? false,
   );
-  const proxyAutoConfig = useMimoStore(
+  const proxyAutoConfig = useVergeStore(
     (s) => s.verge.proxy_auto_config ?? false,
   );
-  const pacFileContent = useMimoStore(
+  const pacFileContent = useVergeStore(
     (s) => s.verge.pac_file_content ?? DEFAULT_PAC,
   );
-  const enableProxyGuard = useMimoStore(
+  const enableProxyGuard = useVergeStore(
     (s) => s.verge.enable_proxy_guard ?? false,
   );
-  const bypassMimo = useMimoStore((s) => {
+  const bypassMimo = useVergeStore((s) => {
     if (OS === "linux") return s.verge.linux_bypass ?? "";
     if (OS === "macos") return s.verge.macos_bypass ?? "";
     if (OS === "windows") return s.verge.windows_bypass ?? "";
     return s.verge.bypass ?? "";
   });
-  const proxyGuardDuration = useMimoStore(
+  const proxyGuardDuration = useVergeStore(
     (s) => s.verge.proxy_guard_duration ?? 10,
   );
-  const patchMimo = useMimoStore((s) => s.patchMimo);
+  const patchMimo = useVergeStore((s) => s.patchMimo);
 
   const [value, setValue] = useState({
     guard: enableProxyGuard,

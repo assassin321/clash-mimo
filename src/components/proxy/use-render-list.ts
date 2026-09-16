@@ -3,7 +3,7 @@ import { Proxy } from "tauri-plugin-mihomo-api";
 
 import { useWindowSize } from "@/hooks/use-window-size";
 import { useProxiesSWR } from "@/services/swr";
-import { useProfilesStore, useMimoStore } from "@/stores";
+import { useProfilesStore, useVergeStore } from "@/stores";
 import type { HeadState } from "@/stores/proxyHeadStateStore";
 import {
   DEFAULT_STATE,
@@ -31,7 +31,7 @@ export const useRenderList = (mode: string) => {
   const { data: proxiesData, mutate: mutateProxies } = useProxiesSWR();
 
   const currentProfileUid = useProfilesStore((s) => s.currentProfile?.uid);
-  const proxyLayoutColumn = useMimoStore(
+  const proxyLayoutColumn = useVergeStore(
     (s) => s.verge.proxy_layout_column || 6,
   );
   const { size } = useWindowSize();

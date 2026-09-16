@@ -19,11 +19,11 @@ import { loadMonaco } from "./services/monaco";
 import {
   useProfilesStore,
   useThemeSettingsStore,
-  useMimoStore,
+  useVergeStore,
 } from "./stores";
 
 function App() {
-  const refreshMimo = useMimoStore((s) => s.refreshMimo);
+  const refreshMimo = useVergeStore((s) => s.refreshMimo);
   const syncThemeSettings = useThemeSettingsStore((s) => s.syncThemeSettings);
 
   const refreshProfilesConfig = useProfilesStore((s) => s.refreshConfig);

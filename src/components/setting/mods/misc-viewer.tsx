@@ -13,31 +13,31 @@ import { useTranslation } from "react-i18next";
 import { BaseDialog, DialogRef, SwitchLovely } from "@/components/base";
 import { useNotice } from "@/components/base/notifies";
 import { DEFAULT_TEST_URL } from "@/services/delay";
-import { useMimoStore } from "@/stores";
+import { useVergeStore } from "@/stores";
 
 export const MiscViewer = forwardRef<DialogRef>((_props, ref) => {
   const { t } = useTranslation();
   const { notice } = useNotice();
-  const autoCloseConnection = useMimoStore(
+  const autoCloseConnection = useVergeStore(
     (s) => s.verge.auto_close_connection ?? true,
   );
-  const autoCheckUpdate = useMimoStore(
+  const autoCheckUpdate = useVergeStore(
     (s) => s.verge.auto_check_update ?? true,
   );
-  const enableBuiltinEnhanced = useMimoStore(
+  const enableBuiltinEnhanced = useVergeStore(
     (s) => s.verge.enable_builtin_enhanced ?? true,
   );
-  const proxyLayoutColumn = useMimoStore(
+  const proxyLayoutColumn = useVergeStore(
     (s) => s.verge.proxy_layout_column ?? 6,
   );
-  const defaultLatencyTest = useMimoStore(
+  const defaultLatencyTest = useVergeStore(
     (s) => s.verge.default_latency_test ?? "",
   );
-  const autoLogClean = useMimoStore((s) => s.verge.auto_log_clean ?? 0);
-  const defaultLatencyTimeout = useMimoStore(
+  const autoLogClean = useVergeStore((s) => s.verge.auto_log_clean ?? 0);
+  const defaultLatencyTimeout = useVergeStore(
     (s) => s.verge.default_latency_timeout ?? 5000,
   );
-  const patchMimo = useMimoStore((s) => s.patchMimo);
+  const patchMimo = useVergeStore((s) => s.patchMimo);
 
   const [open, setOpen] = useState(false);
   const [values, setValues] = useState({

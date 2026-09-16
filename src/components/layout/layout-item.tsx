@@ -9,7 +9,7 @@ import {
 import { useMatchRoute, useNavigate } from "@tanstack/react-router";
 import { motion } from "motion/react";
 
-import { useMimoStore } from "@/stores";
+import { useVergeStore } from "@/stores";
 import { cn } from "@/utils";
 
 interface Props {
@@ -31,7 +31,7 @@ export const LayoutItem = (props: Props) => {
     onNavigate,
     onMouseEnter,
   } = props;
-  const menuIcon = useMimoStore((s) => s.verge.menu_icon ?? "monochrome");
+  const menuIcon = useVergeStore((s) => s.verge.menu_icon ?? "monochrome");
   const matchRoute = useMatchRoute();
   const match = !!matchRoute({ to });
   const navigate = useNavigate();

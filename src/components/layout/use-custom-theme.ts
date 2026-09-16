@@ -9,7 +9,7 @@ import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { useEffect, useMemo } from "react";
 
 import { defaultDarkTheme, defaultTheme } from "@/pages/_theme";
-import { useMimoStore } from "@/stores";
+import { useVergeStore } from "@/stores";
 import {
   normalizeThemeSetting,
   useThemeModeStore,
@@ -101,9 +101,9 @@ function createCustomTheme(themeMode: ThemeMode, setting: IMimoThemeSettings) {
 }
 
 export const useCustomTheme = () => {
-  const vergeThemeMode = useMimoStore((s) => s.verge.theme_mode);
-  const language = useMimoStore((s) => s.verge.language);
-  const patchMimo = useMimoStore((s) => s.patchMimo);
+  const vergeThemeMode = useVergeStore((s) => s.verge.theme_mode);
+  const language = useVergeStore((s) => s.verge.language);
+  const patchMimo = useVergeStore((s) => s.patchMimo);
   const currentThemeMode = useThemeModeStore((s) => s.themeMode);
   const setMode = useThemeModeStore((s) => s.setThemeMode);
   const themeSettings = useThemeSettingsStore((s) => s.themeSettings);

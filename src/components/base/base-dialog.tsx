@@ -18,7 +18,7 @@ import {
   useRef,
 } from "react";
 
-import { useMimoStore } from "@/stores";
+import { useVergeStore } from "@/stores";
 import { cn } from "@/utils";
 import getSystem from "@/utils/get-system";
 
@@ -73,7 +73,7 @@ export const BaseDialog = (props: BaseDialogProps) => {
     onCancel,
     onClose,
   } = props;
-  const enableSystemTitleBar = useMimoStore(
+  const enableSystemTitleBar = useVergeStore(
     (s) => s.verge.enable_system_title_bar ?? false,
   );
   const titlebarRef = useRef<HTMLDivElement | null>(null);

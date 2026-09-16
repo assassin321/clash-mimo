@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { DialogRef, SwitchLovely } from "@/components/base";
-import { useMimoStore } from "@/stores";
+import { useVergeStore } from "@/stores";
 
 import { GuardState } from "./mods/guard-state";
 import { SettingItem, SettingList } from "./mods/setting-comp";
@@ -18,16 +18,16 @@ interface Props {
 const SettingSystem = ({ onError }: Props) => {
   const { t } = useTranslation();
 
-  const enableAutoLaunch = useMimoStore(
+  const enableAutoLaunch = useVergeStore(
     (s) => s.verge.enable_auto_launch ?? false,
   );
-  const silentStartMode = useMimoStore(
+  const silentStartMode = useVergeStore(
     (s) => s.verge.silent_start_mode ?? false,
   );
-  const enableSystemProxy = useMimoStore(
+  const enableSystemProxy = useVergeStore(
     (s) => s.verge.enable_system_proxy ?? false,
   );
-  const patchMimo = useMimoStore((s) => s.patchMimo);
+  const patchMimo = useVergeStore((s) => s.patchMimo);
 
   const sysproxyRef = useRef<DialogRef>(null);
   const [mountedSysproxyViewer, setMountedSysproxyViewer] = useState(false);

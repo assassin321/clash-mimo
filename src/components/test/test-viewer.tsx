@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 import { useShallow } from "zustand/react/shallow";
 
 import { BaseDialog } from "@/components/base";
-import { useMimoStore } from "@/stores";
+import { useVergeStore } from "@/stores";
 
 import { useNotice } from "../base/notifies";
 
@@ -26,8 +26,8 @@ export const TestViewer = forwardRef<TestViewerRef, Props>((props, ref) => {
   const [open, setOpen] = useState(false);
   const [openType, setOpenType] = useState<"new" | "edit">("new");
   const [loading, setLoading] = useState(false);
-  const testList = useMimoStore(useShallow((s) => s.verge.test_list ?? []));
-  const patchMimo = useMimoStore((s) => s.patchMimo);
+  const testList = useVergeStore(useShallow((s) => s.verge.test_list ?? []));
+  const patchMimo = useVergeStore((s) => s.patchMimo);
   const { setValue, register, handleSubmit, reset } = useForm<IMimoTestItem>({
     defaultValues: {
       name: "",

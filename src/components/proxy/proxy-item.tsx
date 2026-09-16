@@ -14,7 +14,7 @@ import { Proxy } from "tauri-plugin-mihomo-api";
 
 import { BaseLoading } from "@/components/base";
 import delayManager, { DEFAULT_LATENCY_TIMEOUT } from "@/services/delay";
-import { useMimoStore } from "@/stores";
+import { useVergeStore } from "@/stores";
 import { proxyId } from "@/utils/proxyId";
 
 import { IProxyGroupItem } from "./use-render-list";
@@ -41,7 +41,7 @@ export const ProxyItem = memo(function ProxyItem(props: Props) {
     sx,
     onClick,
   } = props;
-  const timeout = useMimoStore(
+  const timeout = useVergeStore(
     (s) => s.verge.default_latency_timeout ?? DEFAULT_LATENCY_TIMEOUT,
   );
   const delay = delayManager.getDelayFix(proxy, group.name);

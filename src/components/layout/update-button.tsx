@@ -1,7 +1,7 @@
 import React, { Suspense, useRef } from "react";
 
 import { useCheckUpdateSWR } from "@/services/swr";
-import { useMimoStore } from "@/stores";
+import { useVergeStore } from "@/stores";
 
 import { DialogRef } from "../base";
 
@@ -17,7 +17,7 @@ interface Props {
 
 export const UpdateButton = (props: Props) => {
   const { className } = props;
-  const autoCheckUpdate = useMimoStore(
+  const autoCheckUpdate = useVergeStore(
     (s) => s.verge.auto_check_update ?? true,
   );
 

@@ -8,7 +8,7 @@ import { BaseDialog, BaseEmpty, DialogRef } from "@/components/base";
 import { useNotice } from "@/components/base/notifies";
 import { useClashInfo } from "@/hooks/use-clash";
 import { openWebUrl } from "@/services/cmds";
-import { useMimoStore } from "@/stores";
+import { useVergeStore } from "@/stores";
 
 import { WebUIItem } from "./web-ui-item";
 
@@ -22,10 +22,10 @@ export const WebUIViewer = forwardRef<DialogRef>((_props, ref) => {
   const { notice } = useNotice();
 
   const { clashInfo } = useClashInfo();
-  const webUIList = useMimoStore(
+  const webUIList = useVergeStore(
     useShallow((s) => s.verge.web_ui_list ?? DEFAULT_WEB_UI_LIST),
   );
-  const patchMimo = useMimoStore((s) => s.patchMimo);
+  const patchMimo = useVergeStore((s) => s.patchMimo);
 
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState(false);

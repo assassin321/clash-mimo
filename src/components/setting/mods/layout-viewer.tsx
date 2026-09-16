@@ -22,7 +22,7 @@ import { BaseDialog, DialogRef, SwitchLovely } from "@/components/base";
 import { useNotice } from "@/components/base/notifies";
 import { GuardState } from "@/components/setting/mods/guard-state";
 import { copyIconFile, getAppDir } from "@/services/cmds";
-import { useMimoStore } from "@/stores";
+import { useVergeStore } from "@/stores";
 import getSystem from "@/utils/get-system";
 
 const appWindow = getCurrentWebviewWindow();
@@ -33,31 +33,31 @@ export const LayoutViewer = forwardRef<DialogRef>((_props, ref) => {
 
   const { t } = useTranslation();
   const { notice } = useNotice();
-  const enableSystemTitleBar = useMimoStore(
+  const enableSystemTitleBar = useVergeStore(
     (s) => s.verge.enable_system_title_bar ?? false,
   );
-  const enableKeepUiActive = useMimoStore(
+  const enableKeepUiActive = useVergeStore(
     (s) => s.verge.enable_keep_ui_active ?? false,
   );
-  const keepInDock = useMimoStore((s) => s.verge.keep_in_dock ?? false);
-  const trafficGraph = useMimoStore((s) => s.verge.traffic_graph ?? true);
-  const enableMemoryUsage = useMimoStore(
+  const keepInDock = useVergeStore((s) => s.verge.keep_in_dock ?? false);
+  const trafficGraph = useVergeStore((s) => s.verge.traffic_graph ?? true);
+  const enableMemoryUsage = useVergeStore(
     (s) => s.verge.enable_memory_usage ?? true,
   );
-  const enableGroupIcon = useMimoStore(
+  const enableGroupIcon = useVergeStore(
     (s) => s.verge.enable_group_icon ?? true,
   );
-  const menuIcon = useMimoStore((s) => s.verge.menu_icon ?? "monochrome");
-  const enableTray = useMimoStore((s) => s.verge.enable_tray ?? true);
-  const trayIcon = useMimoStore((s) => s.verge.tray_icon ?? "monochrome");
-  const commonTrayIcon = useMimoStore(
+  const menuIcon = useVergeStore((s) => s.verge.menu_icon ?? "monochrome");
+  const enableTray = useVergeStore((s) => s.verge.enable_tray ?? true);
+  const trayIcon = useVergeStore((s) => s.verge.tray_icon ?? "monochrome");
+  const commonTrayIcon = useVergeStore(
     (s) => s.verge.common_tray_icon ?? false,
   );
-  const sysproxyTrayIcon = useMimoStore(
+  const sysproxyTrayIcon = useVergeStore(
     (s) => s.verge.sysproxy_tray_icon ?? false,
   );
-  const tunTrayIcon = useMimoStore((s) => s.verge.tun_tray_icon ?? false);
-  const patchMimo = useMimoStore((s) => s.patchMimo);
+  const tunTrayIcon = useVergeStore((s) => s.verge.tun_tray_icon ?? false);
+  const patchMimo = useVergeStore((s) => s.patchMimo);
 
   const [open, setOpen] = useState(false);
   const [commonIcon, setCommonIcon] = useState("");

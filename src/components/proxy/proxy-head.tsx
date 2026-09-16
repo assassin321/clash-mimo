@@ -15,7 +15,7 @@ import { memo, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import delayManager from "@/services/delay";
-import { useProfilesStore, useMimoStore } from "@/stores";
+import { useProfilesStore, useVergeStore } from "@/stores";
 import {
   createScopedHeadStateActions,
   DEFAULT_STATE,
@@ -59,7 +59,7 @@ export const ProxyHead = memo(function ProxyHead(props: Props) {
     return () => clearTimeout(timer);
   }, []);
 
-  const defaultLatencyTest = useMimoStore((s) => s.verge.default_latency_test);
+  const defaultLatencyTest = useVergeStore((s) => s.verge.default_latency_test);
 
   useEffect(() => {
     delayManager.setUrl(groupName, testUrl || defaultLatencyTest);

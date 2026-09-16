@@ -6,7 +6,7 @@ import { useShallow } from "zustand/react/shallow";
 
 import { BaseDialog, DialogRef } from "@/components/base";
 import { useNotice } from "@/components/base/notifies";
-import { useMimoStore } from "@/stores";
+import { useVergeStore } from "@/stores";
 import {
   formatHotkeyKeys,
   normalizeKeys,
@@ -289,11 +289,11 @@ export const HotkeyViewer = forwardRef<DialogRef>((_props, ref) => {
   const { t } = useTranslation();
   const { notice } = useNotice();
   const [open, setOpen] = useState(false);
-  const vergeAppHotkeys = useMimoStore(
+  const vergeAppHotkeys = useVergeStore(
     useShallow((s) => s.verge.app_hotkeys ?? []),
   );
-  const vergeHotkeys = useMimoStore(useShallow((s) => s.verge.hotkeys ?? []));
-  const patchMimo = useMimoStore((s) => s.patchMimo);
+  const vergeHotkeys = useVergeStore(useShallow((s) => s.verge.hotkeys ?? []));
+  const patchMimo = useVergeStore((s) => s.patchMimo);
 
   const [globalHotkeyMap, setGlobalHotkeyMap] = useState<HotkeyMap>({});
   const [appHotkeyMap, setAppHotkeyMap] = useState<HotkeyMap>({});

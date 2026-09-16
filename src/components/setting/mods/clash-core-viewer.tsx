@@ -27,7 +27,7 @@ import {
   grantPermissions,
   restartSidecar,
 } from "@/services/cmds";
-import { useMimoStore } from "@/stores";
+import { useVergeStore } from "@/stores";
 import { cn } from "@/utils";
 import getSystem from "@/utils/get-system";
 
@@ -47,8 +47,8 @@ const OS = getSystem();
 export const ClashCoreViewer = forwardRef<DialogRef, Props>((_props, ref) => {
   const { t } = useTranslation();
   const { notice } = useNotice();
-  const clashCore = useMimoStore((s) => s.verge.clash_core ?? "clash-mihomo");
-  const patchMimo = useMimoStore((s) => s.patchMimo);
+  const clashCore = useVergeStore((s) => s.verge.clash_core ?? "clash-mihomo");
+  const patchMimo = useVergeStore((s) => s.patchMimo);
   const { clash } = useClash();
   const { tun } = clash ?? {};
   const [open, setOpen] = useState(false);

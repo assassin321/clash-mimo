@@ -467,7 +467,7 @@ Backup 区块能力：
 
 主要状态中心：
 
-- `useMimoStore`
+- `useVergeStore`
   - 管理语言、主题、布局、托盘、快捷键、启动页、备份配置等应用级设置
 - `useProfilesStore`
   - 管理当前 profile、profile 列表、全局 chain、chain 日志、激活状态

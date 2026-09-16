@@ -16,5 +16,5 @@ export {
   useThemeModeStore,
   useThemeSettingsStore,
 } from "./themeStore";
-export { useMimoStore } from "./mimoStore";
+export { useVergeStore } from "./vergeStore";
 export { useWindowSizeStore } from "./windowSizeStore";

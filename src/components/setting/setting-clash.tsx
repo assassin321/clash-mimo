@@ -23,7 +23,7 @@ import { useMihomoCoresInfo } from "@/hooks/use-mihomo-cores-info";
 import { usePortable } from "@/hooks/use-portable";
 import { useService } from "@/hooks/use-service";
 import { invoke_uwp_tool } from "@/services/cmds";
-import { useMimoStore } from "@/stores";
+import { useVergeStore } from "@/stores";
 import { useClashLogStore } from "@/stores";
 import getSystem from "@/utils/get-system";
 
@@ -66,13 +66,13 @@ const SettingClash = ({ onError }: Props) => {
     tun,
   } = clash ?? {};
 
-  const clashCore = useMimoStore((s) => s.verge.clash_core ?? "clash-mihomo");
-  const enableRandomPort = useMimoStore((s) => s.verge.enable_random_port);
-  const enableServiceMode = useMimoStore((s) => s.verge.enable_service_mode);
-  const enableExternalController = useMimoStore(
+  const clashCore = useVergeStore((s) => s.verge.clash_core ?? "clash-mihomo");
+  const enableRandomPort = useVergeStore((s) => s.verge.enable_random_port);
+  const enableServiceMode = useVergeStore((s) => s.verge.enable_service_mode);
+  const enableExternalController = useVergeStore(
     (s) => s.verge.enable_external_controller,
   );
-  const patchMimo = useMimoStore((s) => s.patchMimo);
+  const patchMimo = useVergeStore((s) => s.patchMimo);
   const { serviceStatus, mutateCheckService } = useService();
 
   const { mihomoCoresInfo } = useMihomoCoresInfo();

@@ -6,7 +6,7 @@ import {
   refreshPermissionsGranted,
 } from "@/services/cmds";
 import { swrKeys, useSWR } from "@/services/swr";
-import { useMimoStore } from "@/stores";
+import { useVergeStore } from "@/stores";
 import getSystem from "@/utils/get-system";
 
 import { usePortable } from "./use-portable";
@@ -39,7 +39,7 @@ const OS = getSystem();
 
 export const useMihomoCoresInfo = () => {
   const { serviceStatus } = useService();
-  const clashCore = useMimoStore((s) => s.verge?.clash_core ?? "clash-mihomo");
+  const clashCore = useVergeStore((s) => s.verge?.clash_core ?? "clash-mihomo");
   const serviceUnavailable =
     serviceStatus === "uninstall" || serviceStatus === "unknown";
 

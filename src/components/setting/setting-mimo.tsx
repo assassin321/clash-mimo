@@ -45,7 +45,7 @@ import {
   openLogsDir,
   updateWebDavInfo,
 } from "@/services/cmds";
-import { useMimoStore } from "@/stores";
+import { useVergeStore } from "@/stores";
 import getSystem from "@/utils/get-system";
 
 import { useNotice } from "../base/notifies";
@@ -77,18 +77,18 @@ const SettingMimo = ({ onError }: Props) => {
   const { t } = useTranslation();
   const { notice } = useNotice();
 
-  const appLogLevel = useMimoStore((s) => s.verge.app_log_level);
-  const themeMode = useMimoStore((s) => s.verge.theme_mode);
-  const language = useMimoStore((s) => s.verge.language);
-  const trayEvent = useMimoStore((s) => s.verge.tray_event);
-  const envType = useMimoStore((s) => s.verge.env_type);
-  const startupScript = useMimoStore((s) => s.verge.startup_script);
-  const startPage = useMimoStore((s) => s.verge.start_page);
-  const webdavUrl = useMimoStore((s) => s.verge.webdav_url);
-  const webdavUsername = useMimoStore((s) => s.verge.webdav_username);
-  const webdavPassword = useMimoStore((s) => s.verge.webdav_password);
-  const localBackupDir = useMimoStore((s) => s.verge.local_backup_dir);
-  const patchMimo = useMimoStore((s) => s.patchMimo);
+  const appLogLevel = useVergeStore((s) => s.verge.app_log_level);
+  const themeMode = useVergeStore((s) => s.verge.theme_mode);
+  const language = useVergeStore((s) => s.verge.language);
+  const trayEvent = useVergeStore((s) => s.verge.tray_event);
+  const envType = useVergeStore((s) => s.verge.env_type);
+  const startupScript = useVergeStore((s) => s.verge.startup_script);
+  const startPage = useVergeStore((s) => s.verge.start_page);
+  const webdavUrl = useVergeStore((s) => s.verge.webdav_url);
+  const webdavUsername = useVergeStore((s) => s.verge.webdav_username);
+  const webdavPassword = useVergeStore((s) => s.verge.webdav_password);
+  const localBackupDir = useVergeStore((s) => s.verge.local_backup_dir);
+  const patchMimo = useVergeStore((s) => s.patchMimo);
 
   const configRef = useRef<DialogRef>(null);
   const hotkeyRef = useRef<DialogRef>(null);

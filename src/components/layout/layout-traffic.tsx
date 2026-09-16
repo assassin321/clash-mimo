@@ -12,7 +12,7 @@ import { useMemoryData } from "@/hooks/use-memory-data";
 import { useTrafficData } from "@/hooks/use-traffic-data";
 import { useVisibility } from "@/hooks/use-visibility";
 import { restartSidecar } from "@/services/cmds";
-import { useMimoStore } from "@/stores";
+import { useVergeStore } from "@/stores";
 import parseTraffic from "@/utils/parse-traffic";
 
 import { useNotice } from "../base/notifies";
@@ -20,8 +20,8 @@ import { TrafficGraph, type TrafficRef } from "./traffic-graph";
 
 // setup the traffic
 export const LayoutTraffic = () => {
-  const trafficGraph = useMimoStore((s) => s.verge.traffic_graph ?? true);
-  const displayMemory = useMimoStore(
+  const trafficGraph = useVergeStore((s) => s.verge.traffic_graph ?? true);
+  const displayMemory = useVergeStore(
     (s) => s.verge.enable_memory_usage ?? true,
   );
   const { notice } = useNotice();

@@ -22,7 +22,7 @@ import LoadingPage from "@/pages/loading";
 import { appSWRConfig, refreshClashSWR, SWRConfig } from "@/services/swr";
 import { useProfilesStore } from "@/stores/profilesStore";
 import { useRulesStateStore } from "@/stores/rulesStateStore";
-import { useMimoStore } from "@/stores/mimoStore";
+import { useVergeStore } from "@/stores/vergeStore";
 import { cn } from "@/utils";
 import { signalFrontendReady } from "@/utils/frontend-ready";
 import getSystem from "@/utils/get-system";
@@ -45,12 +45,12 @@ const Layout = () => {
   const visitedPathsRef = useRef(new Set<string>());
   const { notice } = useNotice();
   const visible = useVisibility();
-  const language = useMimoStore((s) => s.verge.language);
-  const enableSystemTitleBar = useMimoStore(
+  const language = useVergeStore((s) => s.verge.language);
+  const enableSystemTitleBar = useVergeStore(
     (s) => s.verge.enable_system_title_bar ?? false,
   );
-  const appHotkeys = useMimoStore((s) => s.verge.app_hotkeys);
-  const refreshMimo = useMimoStore((s) => s.refreshMimo);
+  const appHotkeys = useVergeStore((s) => s.verge.app_hotkeys);
+  const refreshMimo = useVergeStore((s) => s.refreshMimo);
   const refreshProfilesConfig = useProfilesStore((s) => s.refreshConfig);
   const fetchRules = useRulesStateStore((s) => s.fetchRules);
 
@@ -66,7 +66,7 @@ const Layout = () => {
   const handleClose = () => {
     const appWindow = getCurrentWebviewWindow();
     const keepUIActive =
-      useMimoStore.getState().verge.enable_keep_ui_active ?? false;
+      useVergeStore.getState().verge.enable_keep_ui_active ?? false;
     if (keepUIActive) {
       appWindow.hide();
     } else {

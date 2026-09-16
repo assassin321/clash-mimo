@@ -9,7 +9,7 @@ import { BaseDialog, DialogRef } from "@/components/base";
 import { useNotice } from "@/components/base/notifies";
 import { useService } from "@/hooks/use-service";
 import { installService, uninstallService } from "@/services/cmds";
-import { useMimoStore } from "@/stores";
+import { useVergeStore } from "@/stores";
 
 interface Props {
   enable: boolean;
@@ -20,7 +20,7 @@ export const ServiceViewer = forwardRef<DialogRef, Props>((props, ref) => {
 
   const { t } = useTranslation();
   const { notice } = useNotice();
-  const patchMimo = useMimoStore((s) => s.patchMimo);
+  const patchMimo = useVergeStore((s) => s.patchMimo);
   const [open, setOpen] = useState(false);
 
   const { serviceStatus, mutateCheckService } = useService();

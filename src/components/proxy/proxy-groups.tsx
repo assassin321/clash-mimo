@@ -14,7 +14,7 @@ import { ProxyGroupSidebar } from "@/components/proxy/proxy-group-sidebar";
 import { ProxyRender } from "@/components/proxy/proxy-render";
 import LoadingPage from "@/pages/loading";
 import delayManager from "@/services/delay";
-import { useProfilesStore, useMimoStore } from "@/stores";
+import { useProfilesStore, useVergeStore } from "@/stores";
 import { cn, findAndHighlightElement } from "@/utils";
 import { groupId, proxyId } from "@/utils/proxyId";
 
@@ -40,8 +40,8 @@ export const ProxyGroups = (props: Props) => {
   const isRuleMode = mode === "rule";
 
   const { renderList, onProxies } = useRenderList(mode);
-  const timeout = useMimoStore((s) => s.verge.default_latency_timeout ?? 5000);
-  const autoCloseConnection = useMimoStore(
+  const timeout = useVergeStore((s) => s.verge.default_latency_timeout ?? 5000);
+  const autoCloseConnection = useVergeStore(
     (s) => s.verge.auto_close_connection ?? true,
   );
 
