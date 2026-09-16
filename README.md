@@ -14,21 +14,6 @@ A <a href="https://github.com/MetaCubeX/mihomo">Mihomo</a> GUI based on <a href=
   <a href="https://github.com/assassin321/clash-mimo/blob/main/LICENSE"><img src="https://img.shields.io/github/license/assassin321/clash-mimo" alt="License" /></a>
 </p>
 
-> [!Note]
->
-> 此仓库 Fork 自 1.6.0 版本的 **_Clash Mimo Rev_**，基于个人需求进行功能定制和优化。
->
-> 其他 Clash 系列桌面端软件：
->
-> - [Sparkle](https://github.com/xishang0128/sparkle)
-> - [Clash Mimo Rev](https://github.com/clash-verge-rev/clash-verge-rev)
-> - [Clash Nyanpasu](https://github.com/libnyanpasu/clash-nyanpasu)
-> - [FlClash](https://github.com/chen08209/FlClash)
-
-## Preview
-
-![preview](./docs/preview.png)
-
 ## Features
 
 - **Mihomo Core Only** — Exclusive support for the [Mihomo](https://github.com/MetaCubeX/mihomo) (Clash Meta) core.
@@ -63,7 +48,9 @@ See [CHANGELOG.md](./CHANGELOG.md) and [UPDATELOG.md](./UPDATELOG.md).
 
 Clash Mimo was based on or inspired by these projects:
 
-- [clash-verge-rev/clash-verge-rev](https://github.com/clash-verge-rev/clash-verge-rev): Continuation of Clash Mimo - A Clash Meta GUI based on Tauri (Windows, MacOS, Linux).
+- [oomeow/clash-verge-self](https://github.com/oomeow/clash-verge-self): Continuation of Clash Verge - A Clash Meta GUI based on Tauri (Windows, MacOS, Linux).
+- [libnyanpasu/clash-nyanpasu](https://github.com/libnyanpasu/clash-nyanpasu): Another fork of Clash Verge.
+- [clash-verge-rev/clash-verge-rev](https://github.com/clash-verge-rev/clash-verge-rev): Continuation of Clash Verge - A Clash Meta GUI based on Tauri (Windows, MacOS, Linux).
 - [zzzgydi/clash-verge](https://github.com/zzzgydi/clash-verge): A Clash GUI based on tauri. Supports Windows, macOS and Linux.
 - [tauri-apps/tauri](https://github.com/tauri-apps/tauri): Build smaller, faster, and more secure desktop applications with a web frontend.
 - [Dreamacro/clash](https://github.com/Dreamacro/clash): A rule-based tunnel in Go.
@@ -71,10 +58,6 @@ Clash Mimo was based on or inspired by these projects:
 - [Fndroid/clash_for_windows_pkg](https://github.com/Fndroid/clash_for_windows_pkg): A Windows/macOS GUI based on Clash.
 - [vitejs/vite](https://github.com/vitejs/vite): Next generation frontend tooling. It's fast!
 
-## Activity
-
-![Alt](https://repobeats.axiom.co/api/embed/75152e62bbdd3da71dbc8519238a1741c97ab448.svg "Repobeats analytics image")
-
 ## License
 
-[GPL-3.0 License](./LICENSE)
+GPL-3.0 License. See [License here](./LICENSE) for details.
