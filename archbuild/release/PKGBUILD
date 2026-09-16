@@ -1,0 +1,24 @@
+# Maintainer: oomeow <oomeow@outlook.com>
+
+pkgname=clash-mimo-bin
+_pkgname=clash-mimo
+pkgver=1.6.7
+_pkgver=1.6.7
+pkgrel=1
+pkgdesc="Continuation of Clash Mimo | A Mihomo GUI based on Tauri"
+arch=('x86_64')
+url="https://github.com/assassin321/clash-mimo"
+license=('GPL3')
+depends=('cairo' 'desktop-file-utils' 'gdk-pixbuf2' 'glib2' 'gtk3' 'hicolor-icon-theme' 'libsoup3' 'pango' 'webkit2gtk-4.1' 'libkeybinder3')
+options=('!strip' '!emptydirs')
+conflicts=("$_pkgname" "$_pkgname-alpha" "$_pkgname-alpha-bin" "$_pkgname-git" "clash-meta")
+install=clash-mimo.install
+
+source_x86_64=("${_pkgname}-${_pkgver}-x86_64.deb::${url}/releases/download/v${_pkgver}/clash-mimo_${_pkgver}_amd64.deb")
+
+sha256sums_x86_64=('81e72af54c806d2c57c6774192f5e972f9a768954e177e5a137157b2910d25f3')
+
+package() {
+	# Extract package data
+	tar -xz -f data.tar.gz -C "${pkgdir}"
+}

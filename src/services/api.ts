@@ -1,0 +1,116 @@
+import {
+  getProxies,
+  getProxyProviders,
+  getRuleProviders,
+  Proxy,
+} from "tauri-plugin-mihomo-api";
+
+import { IProxyGroupItem } from "@/components/proxy/use-render-list";
+
+/// Get the Proxy information
+export const calcuProxies = async () => {
+  const proxyRecord = (await getProxies()).proxies;
+  const providerRecord = await calcuProxyProviders();
+  // TODO: it's need?
+  // provider name map
+  const providerMap = Object.fromEntries(
+    Object.entries(providerRecord).flatMap(([_provider, item]) =>
+      item!.proxies.map((p) => [p.name, p]),
+    ),
+  );
+
+  // compatible with proxy-providers
+  const generateItem = (name: string) => {
+    if (proxyRecord[name]) return proxyRecord[name];
+    if (providerMap[name]) return providerMap[name];
+    return {
+      name,
+      type: "unknown",
+      udp: false,
+      xudp: false,
+      tfo: false,
+      history: [],
+    } as unknown as Proxy;
+  };
+
+  const { GLOBAL: global, DIRECT: direct, REJECT: reject } = proxyRecord;
+
+  let groups: IProxyGroupItem[] = Object.values(proxyRecord).reduce<
+    IProxyGroupItem[]
+  >((acc, each) => {
+    if (each?.name !== "GLOBAL" && each?.all) {
+      acc.push({
+        ...each,
+        all: each.all!.map((item) => generateItem(item)),
+      });
+    }
+
+    return acc;
+  }, []);
+
+  if (global?.all) {
+    const globalGroups: IProxyGroupItem[] = global.all.reduce<
+      IProxyGroupItem[]
+    >((acc, name) => {
+      if (proxyRecord[name]?.all) {
+        acc.push({
+          ...proxyRecord[name],
+          all: proxyRecord[name].all!.map((item) => generateItem(item)),
+        });
+      }
+      return acc;
+    }, []);
+
+    const globalNames = new Set(globalGroups.map((each) => each.name));
+    groups = groups
+      .filter((group) => {
+        return !globalNames.has(group.name);
+      })
+      .concat(globalGroups);
+  }
+
+  const proxies = [direct, reject].concat(
+    Object.values(proxyRecord).filter(
+      (p) => !p?.all?.length && p?.name !== "DIRECT" && p?.name !== "REJECT",
+    ),
+  );
+
+  const _global: IProxyGroupItem = {
+    ...global!,
+    all: global?.all?.map((item) => generateItem(item)) || [],
+  };
+
+  const res = {
+    global: _global,
+    direct,
+    groups,
+    records: proxyRecord,
+    proxies,
+  };
+  return res;
+};
+
+// get proxy providers
+export const calcuProxyProviders = async () => {
+  const providers = await getProxyProviders();
+  return Object.fromEntries(
+    Object.entries(providers.providers)
+      .sort()
+      .filter(
+        ([_key, item]) =>
+          item?.vehicleType === "HTTP" || item?.vehicleType === "File",
+      ),
+  );
+};
+
+export const calcuRuleProviders = async () => {
+  const providers = await getRuleProviders();
+  return Object.fromEntries(
+    Object.entries(providers.providers)
+      .sort()
+      .filter(
+        ([_key, item]) =>
+          item?.vehicleType === "HTTP" || item?.vehicleType === "File",
+      ),
+  );
+};

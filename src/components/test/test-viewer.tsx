@@ -1,0 +1,143 @@
+import { TextField } from "@mui/material";
+import { nanoid } from "nanoid";
+import { forwardRef, useImperativeHandle, useState } from "react";
+import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
+import { useShallow } from "zustand/react/shallow";
+
+import { BaseDialog } from "@/components/base";
+import { useMimoStore } from "@/stores";
+
+import { useNotice } from "../base/notifies";
+
+interface Props {
+  onChange: (uid: string, patch?: Partial<IMimoTestItem>) => void;
+}
+
+export interface TestViewerRef {
+  create: () => void;
+  edit: (item: IMimoTestItem) => void;
+}
+
+// create or edit the test item
+export const TestViewer = forwardRef<TestViewerRef, Props>((props, ref) => {
+  const { t } = useTranslation();
+  const { notice } = useNotice();
+  const [open, setOpen] = useState(false);
+  const [openType, setOpenType] = useState<"new" | "edit">("new");
+  const [loading, setLoading] = useState(false);
+  const testList = useMimoStore(useShallow((s) => s.verge.test_list ?? []));
+  const patchMimo = useMimoStore((s) => s.patchMimo);
+  const { setValue, register, handleSubmit, reset } = useForm<IMimoTestItem>({
+    defaultValues: {
+      name: "",
+      icon: "",
+      url: "",
+    },
+  });
+
+  const patchTestList = async (uid: string, patch: Partial<IMimoTestItem>) => {
+    const newList = testList.map((x) => {
+      if (x.uid === uid) {
+        return { ...x, ...patch };
+      }
+      return x;
+    });
+    await patchMimo({ test_list: newList });
+  };
+
+  useImperativeHandle(ref, () => ({
+    create: () => {
+      setOpenType("new");
+      setOpen(true);
+    },
+    edit: (item) => {
+      if (item) {
+        Object.entries(item).forEach(([key, value]) => {
+          setValue(key as any, value);
+        });
+      }
+      setOpenType("edit");
+      setOpen(true);
+    },
+  }));
+
+  const onSubmit = async (data: IMimoTestItem) => {
+    setLoading(true);
+    try {
+      if (!data.name) throw new Error("`Name` should not be null");
+      if (!data.url) throw new Error("`Url` should not be null");
+      let newList;
+      let uid;
+
+      if (openType === "new") {
+        uid = nanoid();
+        const item = { ...data, uid };
+        newList = [...testList, item];
+        await patchMimo({ test_list: newList });
+        props.onChange(uid);
+      } else {
+        if (!data.uid) throw new Error("UID not found");
+        uid = data.uid;
+
+        await patchTestList(uid, data);
+        props.onChange(uid, data);
+      }
+      setOpen(false);
+      setLoading(false);
+      setTimeout(() => reset(), 500);
+    } catch (err: any) {
+      notice("error", err.message || err.toString());
+      setLoading(false);
+    }
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+    setTimeout(() => reset(), 500);
+  };
+
+  const text = {
+    fullWidth: true,
+    size: "small",
+    margin: "normal",
+    variant: "outlined",
+    autoComplete: "off",
+    autoCorrect: "off",
+  } as const;
+
+  return (
+    <BaseDialog
+      open={open}
+      title={
+        openType === "new"
+          ? t("pages.test.dialog.createTitle")
+          : t("pages.test.dialog.editTitle")
+      }
+      contentStyle={{ width: 375 }}
+      okBtn={t("common.actions.save")}
+      cancelBtn={t("common.actions.cancel")}
+      onClose={handleClose}
+      onCancel={handleClose}
+      onOk={handleSubmit(onSubmit)}
+      loading={loading}>
+      <form>
+        <TextField
+          {...text}
+          {...register("name")}
+          label={t("common.fields.name")}
+        />
+        <TextField
+          {...text}
+          {...register("icon")}
+          label={t("common.fields.icon")}
+        />
+        <TextField
+          {...text}
+          {...register("url")}
+          label={t("pages.test.fields.url")}
+        />
+      </form>
+    </BaseDialog>
+  );
+});

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+    <dict>
+        <key>Label</key>
+        <string>mimo.clash.app.helper</string>
+        <key>MachServices</key>
+        <dict>
+            <key>mimo.clash.app.helper</key>
+            <true />
+        </dict>
+        <key>RunAtLoad</key>
+        <true />
+        <key>KeepAlive</key>
+        <true/>
+        <key>Program</key>
+        <string>/Library/PrivilegedHelperTools/mimo.clash.app.helper</string>
+        <key>ProgramArguments</key>
+        <array>
+            <string>/Library/PrivilegedHelperTools/mimo.clash.app.helper</string>
+            <string>--server-id</string>
+            <string>{}</string>
+        </array>
+    </dict>
+</plist>

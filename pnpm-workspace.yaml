@@ -1,0 +1,8 @@
+packages:
+  - "crates/*"
+allowBuilds:
+  "@parcel/watcher": true
+  core-js: true
+  esbuild: true
+  meta-json-schema: false
+storeDir: .pnpm-store

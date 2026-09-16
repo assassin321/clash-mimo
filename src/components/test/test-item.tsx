@@ -1,0 +1,202 @@
+import LanguageTwoTone from "@mui/icons-material/LanguageTwoTone";
+import { Box, Divider, Menu, MenuItem, Typography } from "@mui/material";
+import { convertFileSrc } from "@tauri-apps/api/core";
+import { listen } from "@tauri-apps/api/event";
+import { useLockFn } from "ahooks";
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+
+import { BaseLoading } from "@/components/base";
+import { cmdTestDelay, downloadIconCache } from "@/services/cmds";
+import delayManager from "@/services/delay";
+
+import { useNotice } from "../base/notifies";
+import { TestDiv } from "./test-box";
+
+interface Props {
+  id: string;
+  isDragging?: boolean;
+  style?: React.CSSProperties;
+  itemData: IMimoTestItem;
+  onEdit: () => void;
+  onDelete: (uid: string) => void;
+}
+
+const encodeSvgDataUri = (svg: string) =>
+  `data:image/svg+xml,${encodeURIComponent(svg)}`;
+
+export const TestItem = (props: Props) => {
+  const { isDragging, style, itemData, onEdit, onDelete: onDeleteItem } = props;
+
+  const { t } = useTranslation();
+  const { notice } = useNotice();
+  const [anchorEl, setAnchorEl] = useState<any>(null);
+  if (anchorEl && isDragging) {
+    setAnchorEl(null);
+  }
+  const [position, setPosition] = useState({ left: 0, top: 0 });
+  const [delay, setDelay] = useState(-1);
+  const { uid, name, icon, url } = itemData;
+  const [iconCachePath, setIconCachePath] = useState("");
+
+  useEffect(() => {
+    initIconCachePath();
+  }, [icon]);
+
+  async function initIconCachePath() {
+    if (icon && icon.trim().startsWith("http")) {
+      const fileName = uid + "-" + getFileName(icon);
+      const iconPath = await downloadIconCache(icon, fileName);
+      setIconCachePath(convertFileSrc(iconPath));
+    }
+  }
+
+  function getFileName(url: string) {
+    return url.substring(url.lastIndexOf("/") + 1);
+  }
+
+  const onDelay = async () => {
+    setDelay(-2);
+    const result = await cmdTestDelay(url);
+    setDelay(result);
+  };
+
+  const onEditTest = () => {
+    setAnchorEl(null);
+    onEdit();
+  };
+
+  const onDelete = useLockFn(async () => {
+    setAnchorEl(null);
+    try {
+      onDeleteItem(uid);
+    } catch (err: any) {
+      notice("error", err.message || err.toString());
+    }
+  });
+
+  const menu = [
+    { label: "common.actions.edit", handler: onEditTest },
+    { label: "common.actions.delete", handler: onDelete },
+  ];
+
+  useEffect(() => {
+    const unlisten = listen("verge://test-all", () => {
+      onDelay();
+    });
+
+    return () => {
+      unlisten.then((fn) => fn());
+    };
+  }, []);
+
+  return (
+    <Box sx={{ width: "100%" }}>
+      <TestDiv
+        aria-label={isDragging ? "dragging" : "test"}
+        style={style}
+        onContextMenu={(event) => {
+          const { clientX, clientY } = event;
+          setPosition({ top: clientY, left: clientX });
+          setAnchorEl(event.currentTarget);
+          event.preventDefault();
+        }}>
+        <Box
+          sx={{
+            position: "relative",
+            cursor: "move",
+          }}>
+          {icon && icon.trim() !== "" ? (
+            <Box sx={{ display: "flex", justifyContent: "center" }}>
+              {icon.trim().startsWith("http") && (
+                <img
+                  src={iconCachePath === "" ? icon : iconCachePath}
+                  height="40px"
+                />
+              )}
+              {icon.trim().startsWith("data") && (
+                <img src={icon} height="40px" />
+              )}
+              {icon.trim().startsWith("<svg") && (
+                <img src={encodeSvgDataUri(icon)} height="40px" />
+              )}
+            </Box>
+          ) : (
+            <Box sx={{ display: "flex", justifyContent: "center" }}>
+              <LanguageTwoTone sx={{ height: "40px" }} fontSize="large" />
+            </Box>
+          )}
+
+          <Box sx={{ display: "flex", justifyContent: "center" }}>
+            <Typography variant="h6" component="h2" noWrap title={name}>
+              {name}
+            </Typography>
+          </Box>
+        </Box>
+        <Divider sx={{ marginTop: "8px" }} />
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            marginTop: "8px",
+            color: "primary.main",
+            height: "25px",
+          }}>
+          {delay === -2 && (
+            <div className="rounded px-1.5 py-0.75 text-sm uppercase">
+              <BaseLoading />
+            </div>
+          )}
+
+          {delay === -1 && (
+            <div
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onDelay();
+              }}
+              className="hover:bg-primary/15 rounded px-1.5 py-0.75 text-sm uppercase">
+              {t("pages.test.title")}
+            </div>
+          )}
+
+          {delay >= 0 && (
+            // 显示延迟
+            <div
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onDelay();
+              }}
+              className="hover:bg-primary/15 rounded px-1.5 py-0.75 text-sm uppercase"
+              style={{ color: delayManager.formatDelayColor(delay) }}>
+              {delayManager.formatDelay(delay)}
+            </div>
+          )}
+        </Box>
+      </TestDiv>
+      <Menu
+        open={!!anchorEl}
+        anchorEl={anchorEl}
+        onClose={() => setAnchorEl(null)}
+        anchorPosition={position}
+        anchorReference="anchorPosition"
+        transitionDuration={225}
+        slotProps={{ list: { sx: { py: 0.5 } } }}
+        onContextMenu={(e) => {
+          setAnchorEl(null);
+          e.preventDefault();
+        }}>
+        {menu.map((item) => (
+          <MenuItem
+            key={item.label}
+            onClick={item.handler}
+            sx={{ minWidth: 120 }}
+            dense>
+            {t(item.label)}
+          </MenuItem>
+        ))}
+      </Menu>
+    </Box>
+  );
+};

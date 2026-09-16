@@ -1,0 +1,256 @@
+import RestartAlt from "@mui/icons-material/RestartAlt";
+import SwitchAccessShortcut from "@mui/icons-material/SwitchAccessShortcut";
+import {
+  Box,
+  Button,
+  List,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+} from "@mui/material";
+import { emit } from "@tauri-apps/api/event";
+import { useLockFn } from "ahooks";
+import { debounce } from "lodash-es";
+import { forwardRef, useImperativeHandle, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { PulseLoader } from "react-spinners";
+import { closeAllConnections, upgradeCore } from "tauri-plugin-mihomo-api";
+
+import MetaIcon from "@/assets/image/Meta.svg?react";
+import { BaseDialog, DialogRef } from "@/components/base";
+import { useNotice } from "@/components/base/notifies";
+import { useClash } from "@/hooks/use-clash";
+import { useMihomoCoresInfo } from "@/hooks/use-mihomo-cores-info";
+import { usePortable } from "@/hooks/use-portable";
+import {
+  changeClashCore,
+  grantPermissions,
+  restartSidecar,
+} from "@/services/cmds";
+import { useMimoStore } from "@/stores";
+import { cn } from "@/utils";
+import getSystem from "@/utils/get-system";
+
+interface Props {
+  serviceActive: boolean;
+}
+
+const OS = getSystem();
+
+// const refreshMihomoWebSocketData = () => {
+//   useRefreshTrafficDateStore.getState().refresh();
+//   useRefreshMemoryDateStore.getState().refresh();
+//   useRefreshConnectionDateStore.getState().refresh();
+//   useRefreshLogsDateStore.getState().refresh();
+// };
+
+export const ClashCoreViewer = forwardRef<DialogRef, Props>((_props, ref) => {
+  const { t } = useTranslation();
+  const { notice } = useNotice();
+  const clashCore = useMimoStore((s) => s.verge.clash_core ?? "clash-mihomo");
+  const patchMimo = useMimoStore((s) => s.patchMimo);
+  const { clash } = useClash();
+  const { tun } = clash ?? {};
+  const [open, setOpen] = useState(false);
+  const [upgrading, setUpgrading] = useState(false);
+  const [changingCore, setChangingCore] = useState("");
+  const { mihomoCoresInfo, enableGrantPermissions, muteMihomoCoresInfo } =
+    useMihomoCoresInfo();
+
+  const { portable } = usePortable();
+  const isLinuxPortable = portable && OS === "linux";
+
+  useImperativeHandle(ref, () => ({
+    open: () => setOpen(true),
+    close: () => setOpen(false),
+  }));
+
+  const onCoreChange = useLockFn(async (core: string) => {
+    if (core === clashCore) return;
+    if (isLinuxPortable) {
+      const enableTun = tun?.enable ?? false;
+      const permissionsGranted =
+        mihomoCoresInfo.find((info) => info.core === core)
+          ?.permissionsGranted ?? false;
+      if (enableTun && !permissionsGranted) {
+        notice(
+          "warning",
+          t("messages.clash.core.requireGrant", { core: `${core}` }),
+        );
+        return;
+      }
+    }
+
+    try {
+      setChangingCore(core);
+      // await ManagedMihomoWebSocket.cleanupAll();
+      await closeAllConnections().catch(() => undefined);
+      await changeClashCore(core);
+      patchMimo({ clash_core: core });
+      // refreshMihomoWebSocketData();
+      notice(
+        "success",
+        t("messages.clash.core.switched", { core: `${core}` }),
+        1000,
+      );
+    } catch (err: any) {
+      notice("error", err.message || err.toString());
+    } finally {
+      setChangingCore("");
+    }
+  });
+
+  const onGrant = useLockFn(async (core: string) => {
+    try {
+      await grantPermissions(core);
+      // 自动重启
+      if (core === clashCore) await restartSidecar();
+      notice(
+        "success",
+        t("messages.clash.core.permissionsGranted", {
+          core: `${core}`,
+        }),
+        1000,
+      );
+    } catch (err: any) {
+      notice("error", err.message || err.toString());
+    } finally {
+      muteMihomoCoresInfo();
+      // await refreshMihomoPermissions();
+    }
+  });
+
+  const onRestart = debounce(async () => {
+    try {
+      await restartSidecar();
+      notice("success", t(`messages.clash.core.restarted`), 1000);
+    } catch (err: any) {
+      notice("error", err.message || err.toString());
+    }
+  }, 500);
+
+  const onUpgrade = useLockFn(async () => {
+    try {
+      setUpgrading(true);
+      await upgradeCore();
+      setUpgrading(false);
+      notice("success", t(`messages.clash.core.versionUpdated`), 1000);
+      setTimeout(async () => {
+        await emit("verge://refresh-websocket");
+      }, 2000);
+    } catch (err: any) {
+      setUpgrading(false);
+      if (err.includes("already using latest version")) {
+        notice("info", t("messages.app.latestVersion"), 1000);
+      } else {
+        notice("error", err.message || err.toString());
+      }
+    } finally {
+      muteMihomoCoresInfo();
+    }
+  });
+
+  return (
+    <BaseDialog
+      open={open}
+      title={
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+          }}>
+          {t("pages.settings.clash.core.label")}
+          <Box>
+            <Button
+              variant="contained"
+              size="small"
+              startIcon={<SwitchAccessShortcut />}
+              loadingPosition="start"
+              loading={upgrading}
+              sx={{ marginRight: "8px" }}
+              onClick={onUpgrade}>
+              {t("common.actions.upgrade")}
+            </Button>
+            <Button
+              variant="contained"
+              size="small"
+              onClick={onRestart}
+              startIcon={<RestartAlt />}>
+              {t("common.actions.restart")}
+            </Button>
+          </Box>
+        </Box>
+      }
+      hideOkBtn
+      hideCancelBtn
+      maxWidth="xs"
+      fullWidth
+      onClose={() => setOpen(false)}>
+      <List component="nav">
+        {mihomoCoresInfo.map((each) => (
+          <ListItemButton
+            sx={{ pl: "2px" }}
+            key={each.core}
+            selected={each.core === clashCore}
+            onClick={async () => {
+              await onCoreChange(each.core);
+            }}>
+            <ListItemIcon>
+              <div className="mx-1 flex w-24 flex-col items-center">
+                <MetaIcon className="h-8 w-8" />
+                <span className="text-text-primary text-xs">
+                  {each.version}
+                </span>
+              </div>
+            </ListItemIcon>
+            <ListItemText
+              primary={
+                <div className="inline-flex items-center">
+                  <span>{each.name}</span>
+                  {enableGrantPermissions && (
+                    <div
+                      className={cn(
+                        "bg-error/70 ml-2 inline-block rounded-full px-2 py-0.5 text-[10px] text-white",
+                        {
+                          "bg-success/70": each.permissionsGranted,
+                        },
+                      )}>
+                      {each.permissionsGranted
+                        ? t("common.status.granted")
+                        : t("common.status.notGranted")}
+                    </div>
+                  )}
+                </div>
+              }
+              secondary={`/${each.core}`}
+            />
+            {changingCore === each.core && (
+              <PulseLoader
+                className="mr-4"
+                size={6}
+                color="var(--mui-palette-primary-main)"
+              />
+            )}
+
+            {enableGrantPermissions && (
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onGrant(each.core);
+                }}>
+                {each.permissionsGranted
+                  ? t("common.actions.reGrant")
+                  : t("common.actions.grant")}
+              </Button>
+            )}
+          </ListItemButton>
+        ))}
+      </List>
+    </BaseDialog>
+  );
+});
+
+export default ClashCoreViewer;

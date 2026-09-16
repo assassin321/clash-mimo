@@ -1,0 +1,603 @@
+{
+  "common": {
+    "actions": {
+      "back": "Back",
+      "close": "Close",
+      "cancel": "Cancel",
+      "confirm": "Confirm",
+      "auto": "Auto",
+      "new": "New",
+      "edit": "Edit",
+      "save": "Save",
+      "delete": "Delete",
+      "enable": "Enable",
+      "disable": "Disable",
+      "add": "Add",
+      "apply": "Apply",
+      "browse": "Browse",
+      "clear": "Clear",
+      "pause": "Pause",
+      "refresh": "Refresh",
+      "import": "Import",
+      "update": "Update",
+      "updateAll": "Update All",
+      "upgrade": "Upgrade",
+      "restart": "Restart",
+      "install": "Install",
+      "uninstall": "Uninstall",
+      "grant": "Grant",
+      "reGrant": "Re-Grant",
+      "select": "Select",
+      "openUrl": "Open URL",
+      "chooseFile": "Choose File",
+      "resetToDefault": "Reset to Default",
+      "expandAll": "Expand All",
+      "collapseAll": "Collapse All",
+      "scrollToTop": "Scroll to Top",
+      "exit": "Exit"
+    },
+    "status": {
+      "active": "Active",
+      "closed": "Closed",
+      "default": "Default",
+      "service": {
+        "pending": "pending",
+        "installed": "installed",
+        "uninstall": "uninstalled",
+        "active": "active",
+        "unknown": "unknown"
+      },
+      "enabled": "Enabled",
+      "disabled": "Disabled",
+      "granted": "Granted",
+      "notGranted": "Not Granted",
+      "readOnly": "ReadOnly",
+      "notAvailable": "Not available",
+      "recommended": "Recommended",
+      "required": "Required"
+    },
+    "fields": {
+      "name": "Name",
+      "type": "Type",
+      "description": "Descriptions",
+      "icon": "Icon",
+      "location": "Location",
+      "host": "Host",
+      "process": "Process",
+      "time": "Time",
+      "source": "Source",
+      "destination": "Destination",
+      "from": "From",
+      "updatedTime": "Updated Time",
+      "expireTime": "Expire Time",
+      "usedTotal": "Used / Total",
+      "device": "Device Name",
+      "stack": "Tun Stack",
+      "language": "Language",
+      "startPage": "Start Page",
+      "startupScript": "Startup Script"
+    },
+    "search": {
+      "filter": "Filter",
+      "filterConditions": "Filter conditions",
+      "content": "Content",
+      "contentPlaceholder": "Search rule content",
+      "domain": "Domain",
+      "domainPlaceholder": "Search domain, e.g. google.com",
+      "cidr": "CIDR",
+      "cidrPlaceholder": "Search IP or CIDR, e.g. 8.8.8.8 or 8.8.8.0/24",
+      "rulesTotal": "{{count}} rules",
+      "rulesMatched": "{{mode}}: {{text}} · {{groups}} groups / {{items}} entries",
+      "searching": "Searching...",
+      "matchCase": "Match Case",
+      "matchWholeWord": "Match Whole Word",
+      "useRegularExpression": "Use Regular Expression"
+    },
+    "empty": {
+      "noConnections": "No Connections",
+      "noLogs": "No Logs",
+      "noRules": "No Rules",
+      "noProxies": "No Proxies",
+      "directMode": "Direct Mode",
+      "empty": "Empty"
+    }
+  },
+  "navigation": {
+    "sidebar": {
+      "proxies": "Proxies",
+      "profiles": "Profiles",
+      "connections": "Connections",
+      "rules": "Rules",
+      "logs": "Logs",
+      "test": "Test",
+      "settings": "Settings"
+    }
+  },
+  "pages": {
+    "proxies": {
+      "title": "Proxies",
+      "groups": "Proxy Groups",
+      "provider": "Proxy Provider",
+      "updateAt": "Update At",
+      "modes": {
+        "rule": "rule",
+        "global": "global",
+        "direct": "direct",
+        "script": "script",
+        "merge": "merge",
+        "remote": "remote",
+        "local": "local"
+      },
+      "actions": {
+        "delayCheck": "Delay check",
+        "delayCheckUrl": "Delay check URL",
+        "delayCheckToCancelFixed": "Delay check to cancel fixed"
+      },
+      "sort": {
+        "default": "Sort by default",
+        "delay": "Sort by delay",
+        "name": "Sort by name"
+      },
+      "view": {
+        "basic": "Proxy basic",
+        "detail": "Proxy detail"
+      }
+    },
+    "profiles": {
+      "title": "Profiles",
+      "actions": {
+        "enhanceScripts": "Enhance Scripts",
+        "updateProfile": "Update Profile",
+        "updateAllProfiles": "Update All Profiles",
+        "viewRuntimeConfig": "View Runtime Config",
+        "reactivateProfiles": "Reactivate Profiles",
+        "paste": "Paste",
+        "home": "Home",
+        "editInfo": "Edit Info",
+        "editFile": "Edit File",
+        "openFile": "Open File",
+        "updateProxy": "Update(Proxy)",
+        "toTop": "To Top",
+        "toEnd": "To End",
+        "selectMode": "Select",
+        "deleteSelected": "Delete Selected ({{count}})",
+        "enableSelected": "Enable Selected ({{count}})",
+        "disableSelected": "Disable Selected ({{count}})"
+      },
+      "inputs": {
+        "profileUrl": "Profile URL"
+      },
+      "dialog": {
+        "createTitle": "Create Profile",
+        "editTitle": "Edit Profile",
+        "scriptConsole": "Script Console",
+        "confirmDeletion": "Confirm deletion",
+        "confirmDeletionMessage": "This operation is not reversible",
+        "confirmBatchDeletion": "Delete {{count}} items?",
+        "confirmBatchDeletionMessage": "This operation is not reversible"
+      },
+      "fields": {
+        "subscriptionUrl": "Subscription URL",
+        "updateInterval": "Update Interval",
+        "useSystemProxy": "Use System Proxy",
+        "useClashProxy": "Use Clash Proxy",
+        "acceptInvalidCertsDanger": "Allows Invalid Certificates (Danger)"
+      },
+      "runtime": {
+        "scriptConsole": "Script Console",
+        "console": "Console (Runtime)"
+      },
+      "editor": {
+        "console": "Console",
+        "restoreChanges": "Restore Changes",
+        "runCheck": "Run Check{{keymap}}"
+      },
+      "dragImport": {
+        "title": "Drag and Drop to Import Profiles",
+        "description": "Drop local profile files anywhere in this window to import them immediately.",
+        "ready": "Release to import {{count}} profile files",
+        "waiting": "Waiting for importable profile files",
+        "importable": "Importable",
+        "notImportable": "Unsupported",
+        "hint": "Supports `.yaml` / `.yml`, and the entire window can be used as the drop zone",
+        "hintWithInvalid": "Supports `.yaml` / `.yml`, non-YAML files will be ignored"
+      }
+    },
+    "connections": {
+      "title": "Connections",
+      "view": {
+        "table": "Table View",
+        "list": "List View"
+      },
+      "actions": {
+        "closeAll": "Close All",
+        "closeConnection": "Close Connection"
+      },
+      "columns": {
+        "actions": "Actions",
+        "closedTime": "ClosedTime",
+        "downloadSpeed": "Download Speed",
+        "uploadSpeed": "Upload Speed",
+        "totalDownloaded": "Total Download",
+        "totalUploaded": "Total Upload",
+        "downloaded": "Downloaded",
+        "uploaded": "Uploaded",
+        "dlSpeed": "DL Speed",
+        "ulSpeed": "UL Speed",
+        "chains": "Chains",
+        "rule": "Rule",
+        "dragToReorder": "Drag to reorder columns",
+        "startAt": "Start at {{time}}"
+      },
+      "filters": {
+        "placeholder": "Filter by connection fields",
+        "hostPlaceholder": "Search host",
+        "noOptions": "No filter values",
+        "destinationIP": "Destination IP",
+        "destinationPort": "Destination Port",
+        "sourceIP": "Source IP",
+        "sourcePort": "Source Port",
+        "network": "Network",
+        "inbound": "Inbound"
+      }
+    },
+    "rules": {
+      "title": "Rules",
+      "provider": "Rule Provider",
+      "actions": {
+        "toggleDisable": "Enable/Disable Rule",
+        "enable": "Enable Rule",
+        "disable": "Disable Rule"
+      }
+    },
+    "logs": {
+      "title": "Logs"
+    },
+    "test": {
+      "title": "Test",
+      "actions": {
+        "testAll": "Test All"
+      },
+      "dialog": {
+        "createTitle": "Create Test",
+        "editTitle": "Edit Test"
+      },
+      "fields": {
+        "url": "Test URL"
+      }
+    },
+    "settings": {
+      "title": "Settings",
+      "system": {
+        "title": "System Setting",
+        "proxy": {
+          "label": "System Proxy",
+          "info": "Enable to modify the operating system's proxy settings. If enabling fails, modify the operating system's proxy settings manually",
+          "dialogTitle": "System Proxy Setting",
+          "current": "Current System Proxy",
+          "enableStatus": "Enable Status:",
+          "serverAddr": "Server Addr: ",
+          "bypassValue": "Bypass: ",
+          "guard": {
+            "label": "Proxy Guard",
+            "info": "Enable to prevent other software from modifying the operating system's proxy settings",
+            "duration": "Guard Duration"
+          },
+          "bypass": {
+            "label": "Proxy Bypass Settings: ",
+            "duplicate": "Duplicate Bypass",
+            "resetDefault": "Reset Default Bypass"
+          },
+          "pac": {
+            "useMode": "Use PAC Mode",
+            "content": "PAC Script Content",
+            "url": "PAC URL: "
+          }
+        },
+        "autoLaunch": "Auto Launch",
+        "silentStart": {
+          "label": "Silent Start",
+          "options": {
+            "bootup": "Boot-up Only",
+            "global": "Global",
+            "off": "OFF"
+          }
+        }
+      },
+      "clash": {
+        "title": "Clash Setting",
+        "tun": {
+          "label": "Tun Mode",
+          "info": "The Tun mode requires granting core-related permissions. Please enable service mode before using it or manual grant core permissions",
+          "serviceModeOnly": "System and Mixed Can Only be Used in Service Mode",
+          "autoRoute": "Auto Route",
+          "strictRoute": "Strict Route",
+          "autoDetectInterface": "Auto Detect Interface",
+          "dnsHijack": "DNS Hijack",
+          "mtu": "Max Transmission Unit"
+        },
+        "serviceMode": {
+          "label": "Service Mode",
+          "currentState": "Current State",
+          "info": "Information: Please make sure that the Clash Mimo Service is installed and enabled",
+          "disable": "Disable Service Mode"
+        },
+        "allowLan": "Allow Lan",
+        "networkInterfaceInfo": "Network Interface Info",
+        "ipv6": "IPv6",
+        "findProcessMode": {
+          "label": "Find Process Mode",
+          "options": {
+            "always": "force matching all processes",
+            "strict": "Clash determines whether to enable it",
+            "off": "Does not match the process"
+          }
+        },
+        "logLevel": "Log Level",
+        "portConfig": {
+          "label": "Port Config",
+          "randomPort": "Random Port",
+          "dialogTitle": "Clash Port"
+        },
+        "externalController": {
+          "label": "External Controller",
+          "host": "Host",
+          "secret": "Secret",
+          "enabled": "External Controller Enabled",
+          "disabled": "External Controller Disabled",
+          "allowPrivateNetwork": "Allow Private Network",
+          "allowOrigins": "Allow Origins",
+          "duplicateAllowOrigins": "Duplicate Allow Origins",
+          "resetDefaultAllowOrigins": "Reset Default Allow Origins"
+        },
+        "webUi": {
+          "label": "Web UI",
+          "replaceTemplateHint": "Replace host, port, secret with %host, %port, %secret",
+          "supportPlaceholders": "Support %host, %port, %secret"
+        },
+        "core": {
+          "label": "Clash Core",
+          "updateRequires": "Update core requires"
+        },
+        "openUwpTool": "Open UWP tool",
+        "updateGeoData": "Update GeoData",
+        "unifiedDelay": {
+          "label": "Unified Delay",
+          "info": "When unified delay is turned on, two delay tests will be performed to eliminate the delay differences between different types of nodes caused by connection handshakes, etc"
+        },
+        "flushCache": "Flush {{cache}} Cache",
+        "cacheFlushed": "{{cache}} Cache Flushed"
+      },
+      "verge": {
+        "title": "Mimo Setting",
+        "themeMode": {
+          "label": "Theme Mode",
+          "options": {
+            "light": "Light",
+            "dark": "Dark",
+            "system": "System"
+          }
+        },
+        "tray": {
+          "clickEvent": "Tray Click Event",
+          "showMainWindow": "Show Main Window"
+        },
+        "env": {
+          "copyType": "Copy Env Type",
+          "copySuccess": "Copy Env Successfully"
+        },
+        "theme": {
+          "title": "Theme Setting",
+          "default": "Default Setting",
+          "currentTheme": "Current Theme",
+          "presets": {
+            "custom": "Custom",
+            "default": "Sky Blue",
+            "ocean": "Ocean Teal",
+            "indigo": "Deep Indigo",
+            "sunset": "Rose Pink",
+            "lavender": "Lavender Purple",
+            "monochrome": "Stone Gray"
+          },
+          "colors": {
+            "primary": "Primary Color",
+            "secondary": "Secondary Color",
+            "primaryText": "Primary Text",
+            "secondaryText": "Secondary Text",
+            "info": "Info Color",
+            "warning": "Warning Color",
+            "error": "Error Color",
+            "success": "Success Color",
+            "background": "Background Color",
+            "paperBackground": "Card Background Color"
+          },
+          "fontFamily": "Font Family",
+          "cssInjection": "CSS Injection"
+        },
+        "layout": {
+          "title": "Layout Setting",
+          "trafficGraph": "Traffic Graph",
+          "memoryUsage": "Memory Usage",
+          "proxyGroupIcon": "Proxy Group Icon",
+          "menuIcon": "Menu Icon",
+          "icon": {
+            "monochrome": "Monochrome",
+            "colorful": "Colorful"
+          },
+          "tray": {
+            "label": "Tray",
+            "icon": "Tray Icon",
+            "common": "Common Tray Icon",
+            "systemProxy": "System Proxy Tray Icon",
+            "tun": "Tun Tray Icon"
+          },
+          "splashscreen": "Splash Screen",
+          "systemTitleBar": "System Title Bar",
+          "keepInDock": {
+            "label": "Keep in Dock",
+            "info": "The application icon remains in the dock after the application window is closed"
+          },
+          "keepUiActive": {
+            "label": "Keep UI Active",
+            "info": "Keep the UI active and open it again without re-rendering the interface"
+          }
+        },
+        "misc": {
+          "title": "Miscellaneous",
+          "appLogLevel": "App Log Level",
+          "autoCloseConnections": "Auto Close Connections",
+          "autoCheckUpdate": "Auto Check Update",
+          "enableBuiltinEnhanced": "Enable Builtin Enhanced",
+          "proxyLayoutColumn": "Proxy Layout Column",
+          "autoLogClean": {
+            "label": "Auto Log Clean",
+            "options": {
+              "never": "Never Clean",
+              "sevenDays": "Retain 7 Days",
+              "thirtyDays": "Retain 30 Days",
+              "ninetyDays": "Retain 90 Days"
+            }
+          },
+          "defaultLatencyTest": "Default Latency Test",
+          "defaultLatencyTimeout": "Default Latency Timeout"
+        },
+        "hotkeys": {
+          "title": "Hotkey Setting",
+          "global": "Global",
+          "app": "In-app",
+          "restore": "Restore Settings",
+          "clear": "Clear All",
+          "conflict": "This hotkey already exists",
+          "invalid": "Hotkeys cannot contain only modifier keys",
+          "notAvailable": "Not available",
+          "actions": {
+            "openOrCloseDashboard": "Open/Close Dashboard",
+            "closeDashboard": "Close Dashboard",
+            "ruleMode": "Rule Mode",
+            "globalMode": "Global Mode",
+            "directMode": "Direct Mode",
+            "toggleSystemProxy": "Enable/Disable System Proxy",
+            "toggleTunMode": "Enable/Disable Tun Mode",
+            "exitApp": "Exit App"
+          }
+        },
+        "runtimeConfig": "Runtime Config",
+        "actions": {
+          "openAppDir": "Open App Dir",
+          "openCoreDir": "Open Core Dir",
+          "openLogsDir": "Open Logs Dir",
+          "checkForUpdates": "Check for Updates",
+          "goToReleasePage": "Go to Release Page",
+          "openDevTools": "Open Dev Tools"
+        },
+        "version": "Mimo Version",
+        "backup": {
+          "title": "Backup Setting",
+          "types": {
+            "local": "Local",
+            "webdav": "WebDAV"
+          },
+          "invalidFileFormat": "Invalid file format",
+          "webdavTitle": "WebDav Backup",
+          "actions": {
+            "recovery": "Recovery",
+            "viewFiles": "View Backups",
+            "backup": "Backup"
+          },
+          "onlyProfiles": "Only Backup Profiles",
+          "local": {
+            "dir": "Local Backup Folder",
+            "defaultDir": "Default backup folder"
+          },
+          "webdav": {
+            "url": "WebDav URL",
+            "username": "WebDav Username",
+            "password": "WebDav Password"
+          },
+          "files": "Backup Files",
+          "scopes": {
+            "all": "Config + Profiles",
+            "profiles": "Profiles"
+          }
+        }
+      }
+    }
+  },
+  "messages": {
+    "editor": {
+      "readOnly": "Cannot edit in read-only editor",
+      "regenerateTemplateContent": "Regenerate Template Content",
+      "readMonacoContentFailed": "Can't read monaco content"
+    },
+    "profiles": {
+      "imported": "Profile Imported Successfully",
+      "switched": "Profile Switched",
+      "reactivated": "Profile Reactivated",
+      "batchDeleteSuccess": "Successfully deleted {{count}} items",
+      "batchToggleSuccess": "Updated {{count}} items",
+      "onlyYamlSupported": "Only YAML Files Supported",
+      "unsupportedFiles": "Unsupported files: {{files}}",
+      "importFileFailed": "Failed to import file: {{file}}",
+      "scriptRunCheckFailed": "Script run check failed, Please check the script content is correct",
+      "scriptRunCheckSuccessful": "Script run check successful, This script can be run normally",
+      "contentSaved": "Save Content Successfully",
+      "contentUnchanged": "Profile Content No Change",
+      "configUnchanged": "Profile Config No Change",
+      "configUpdated": "Profile Config Updated",
+      "contentSaveFailed": "Save Content Failed",
+      "saveContent": "Save Content{{keymap}}",
+      "askSaveContentNow": "Content has changed, save it now?"
+    },
+    "clash": {
+      "configUpdated": "Clash Config Updated",
+      "portModified": "Clash Port Modified",
+      "portConflict": "{{portName}} Port Conflict",
+      "portFallback": "Default port `7890` is already in use, using unused port `{{port}}`",
+      "externalControllerAddressModified": "External Controller Address Modified",
+      "core": {
+        "permissionsGranted": "Permissions Granted Successfully for {{core}} Core",
+        "requireGrant": "Tun mode is currently enabled, please grant permission to {{core}} before switching",
+        "versionUpdated": "Core Version Updated",
+        "restarted": "Clash Core Restarted",
+        "runFailed": "Failed to run mihomo core, please check mihomo log to find problem",
+        "switched": "Switched to {{core}} Core"
+      },
+      "geoDataUpdated": "GeoData Updated",
+      "tun": {
+        "macosDeviceNameError": "Tun device names on Macos must follow the combination `utun` + number, for example, `utun1234`",
+        "deviceBusy": "Tun device or resource busy, will tun off Tun mode, please try to enable Tun mode again later",
+        "updateConfigFailed": "Update Tun Config Failed, please try again later"
+      }
+    },
+    "settings": {
+      "applied": "Settings Applied",
+      "serviceInstalled": "Service Installed Successfully",
+      "serviceUninstalled": "Service Uninstalled Successfully",
+      "proxyGuardDurationTooShort": "Proxy Daemon Duration Cannot be Less than 1 Second",
+      "invalidBypassFormat": "Invalid Bypass Format"
+    },
+    "app": {
+      "restartToApply": "Restart Application to Apply Modifications",
+      "latestVersion": "Currently on the Latest Version",
+      "restartSoon": "App Will Be Restarted Soon"
+    },
+    "rules": {
+      "updateProviderError": "[ {{name}} ] Update Failed: {{errorMsg}}",
+      "readProvidersError": "Failed to read rule providers, please check if the rule providers has been updated and synchronized"
+    },
+    "updater": {
+      "portableError": "The portable version does not support in-app updates. Please manually download and replace it",
+      "breakingChangeError": "This version is a major update and does not support in-app updates. Please uninstall it and manually download and install the new version"
+    },
+    "backup": {
+      "webdavConnectionFailed": "WebDav Connection Failed, {{error}}",
+      "success": "Backup Successful",
+      "failed": "Backup Failed, {{error}}",
+      "deleteSuccess": "Delete Backup Successful",
+      "deleteFailed": "Delete Backup Failed, {{error}}",
+      "applySuccess": "Apply Backup Successful, Will Restart App Soon",
+      "applyFailed": "Apply Backup Failed, {{error}}",
+      "platformNoMatch": "Platform No Match"
+    }
+  }
+}
