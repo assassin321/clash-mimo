@@ -5,7 +5,7 @@ import { useLongPress } from "ahooks";
 import { AnimatePresence, motion } from "motion/react";
 import { useRef } from "react";
 
-import AppNameSvg from "@/assets/image/clash_verge.svg?react";
+import AppNameSvg from "@/assets/image/clash_meta.svg?react";
 import LogoSvg from "@/assets/image/logo.svg?react";
 import { UpdateButton } from "@/components/layout/update-button";
 import { useCustomTheme } from "@/components/layout/use-custom-theme";
