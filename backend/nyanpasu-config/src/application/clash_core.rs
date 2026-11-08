@@ -1,0 +1,163 @@
+use enumflags2::bitflags;
+use serde::{Deserialize, Serialize};
+use specta::Type;
+use strum::{AsRefStr, Display, EnumString, IntoStaticStr};
+
+// TODO: when support sing-box, remove this struct
+#[bitflags]
+#[repr(u8)]
+#[derive(
+    Debug,
+    Clone,
+    Copy,
+    Deserialize,
+    Serialize,
+    PartialEq,
+    Eq,
+    Type,
+    Display,
+    AsRefStr,
+    EnumString,
+    IntoStaticStr,
+)]
+#[strum(serialize_all = "kebab-case")]
+pub enum ClashCore {
+    #[serde(rename = "clash", alias = "clash-premium")]
+    ClashPremium = 0b0001,
+    #[serde(rename = "clash-rs")]
+    ClashRs,
+    #[serde(rename = "mihomo", alias = "clash-meta")]
+    Mihomo,
+    #[serde(rename = "mihomo-alpha")]
+    MihomoAlpha,
+    #[serde(rename = "clash-rs-alpha")]
+    ClashRsAlpha,
+    #[serde(rename = "meow")]
+    Meow,
+    #[serde(rename = "meow-alpha")]
+    MeowAlpha,
+}
+
+impl ClashCore {
+    /// The core's sidecar and executable name, without the platform suffix.
+    /// Differs from `Display`, which renders `ClashPremium` as `clash-premium`.
+    pub fn binary_name(&self) -> &'static str {
+        match self {
+            ClashCore::ClashPremium => "clash",
+            ClashCore::ClashRs => "clash-rs",
+            ClashCore::Mihomo => "mihomo",
+            ClashCore::MihomoAlpha => "mihomo-alpha",
+            ClashCore::ClashRsAlpha => "clash-rs-alpha",
+            ClashCore::Meow => "meow",
+            ClashCore::MeowAlpha => "meow-alpha",
+        }
+    }
+
+    /// The agent skills the core's release archive ships under `skills/`. Each skill
+    /// drives the executable of the same name, two directories above its folder.
+    pub fn agent_skills(&self) -> &'static [&'static str] {
+        match self {
+            ClashCore::Meow | ClashCore::MeowAlpha => &["meow-cli"],
+            ClashCore::ClashPremium
+            | ClashCore::ClashRs
+            | ClashCore::Mihomo
+            | ClashCore::MihomoAlpha
+            | ClashCore::ClashRsAlpha => &[],
+        }
+    }
+}
+
+impl Default for ClashCore {
+    fn default() -> Self {
+        match cfg!(feature = "default-meta") {
+            false => Self::ClashPremium,
+            true => Self::Mihomo,
+        }
+    }
+}
+
+impl From<&ClashCore> for nyanpasu_utils::core::CoreType {
+    fn from(core: &ClashCore) -> Self {
+        match core {
+            ClashCore::ClashPremium => nyanpasu_utils::core::CoreType::Clash(
+                nyanpasu_utils::core::ClashCoreType::ClashPremium,
+            ),
+            ClashCore::ClashRs => nyanpasu_utils::core::CoreType::Clash(
+                nyanpasu_utils::core::ClashCoreType::ClashRust,
+            ),
+            ClashCore::Mihomo => {
+                nyanpasu_utils::core::CoreType::Clash(nyanpasu_utils::core::ClashCoreType::Mihomo)
+            }
+            ClashCore::MihomoAlpha => nyanpasu_utils::core::CoreType::Clash(
+                nyanpasu_utils::core::ClashCoreType::MihomoAlpha,
+            ),
+            ClashCore::ClashRsAlpha => nyanpasu_utils::core::CoreType::Clash(
+                nyanpasu_utils::core::ClashCoreType::ClashRustAlpha,
+            ),
+            ClashCore::Meow => {
+                nyanpasu_utils::core::CoreType::Clash(nyanpasu_utils::core::ClashCoreType::Meow)
+            }
+            ClashCore::MeowAlpha => nyanpasu_utils::core::CoreType::Clash(
+                nyanpasu_utils::core::ClashCoreType::MeowAlpha,
+            ),
+        }
+    }
+}
+
+#[derive(Debug, thiserror::Error)]
+#[error("unsupported core type: {0}")]
+pub struct UnsupportedCoreTypeError(pub nyanpasu_utils::core::CoreType);
+
+impl TryFrom<&nyanpasu_utils::core::CoreType> for ClashCore {
+    type Error = UnsupportedCoreTypeError;
+
+    fn try_from(core: &nyanpasu_utils::core::CoreType) -> Result<Self, Self::Error> {
+        match core {
+            nyanpasu_utils::core::CoreType::Clash(clash) => match clash {
+                nyanpasu_utils::core::ClashCoreType::ClashPremium => Ok(ClashCore::ClashPremium),
+                nyanpasu_utils::core::ClashCoreType::ClashRust => Ok(ClashCore::ClashRs),
+                nyanpasu_utils::core::ClashCoreType::ClashRustAlpha => Ok(ClashCore::ClashRsAlpha),
+                nyanpasu_utils::core::ClashCoreType::Mihomo => Ok(ClashCore::Mihomo),
+                nyanpasu_utils::core::ClashCoreType::MihomoAlpha => Ok(ClashCore::MihomoAlpha),
+                nyanpasu_utils::core::ClashCoreType::Meow => Ok(ClashCore::Meow),
+                nyanpasu_utils::core::ClashCoreType::MeowAlpha => Ok(ClashCore::MeowAlpha),
+            },
+            _ => Err(UnsupportedCoreTypeError(core.clone())),
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// The names mirror the `bundle.externalBin` sidecar list in
+    /// `backend/tauri/tauri.conf.json`; change both together.
+    #[test]
+    fn binary_name_is_the_sidecar_name_of_every_core() {
+        let cases = [
+            (ClashCore::ClashPremium, "clash"),
+            (ClashCore::ClashRs, "clash-rs"),
+            (ClashCore::Mihomo, "mihomo"),
+            (ClashCore::MihomoAlpha, "mihomo-alpha"),
+            (ClashCore::ClashRsAlpha, "clash-rs-alpha"),
+            (ClashCore::Meow, "meow"),
+            (ClashCore::MeowAlpha, "meow-alpha"),
+        ];
+        assert_eq!(cases.len(), enumflags2::BitFlags::<ClashCore>::all().len());
+        for (core, name) in cases {
+            assert_eq!(core.binary_name(), name, "{core:?}");
+        }
+    }
+
+    #[test]
+    fn meow_alpha_keeps_its_runtime_wire_identity() {
+        let core = ClashCore::MeowAlpha;
+        let runtime_type = nyanpasu_utils::core::CoreType::from(&core);
+        assert_eq!(
+            runtime_type,
+            nyanpasu_utils::core::CoreType::Clash(nyanpasu_utils::core::ClashCoreType::MeowAlpha)
+        );
+        assert_eq!(ClashCore::try_from(&runtime_type).unwrap(), core);
+    }
+}

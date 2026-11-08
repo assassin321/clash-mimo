@@ -1,0 +1,52 @@
+[package]
+name = "clash-api"
+version = "1.0.2"
+edition.workspace = true
+repository.workspace = true
+license.workspace = true
+
+[dependencies]
+nyanpasu-serde = { path = "../nyanpasu-serde", features = ["indexmap"] }
+backon = "1"
+chrono.workspace = true
+futures-core = "0.3"
+futures-util.workspace = true
+indexmap = { version = "2", features = ["serde"] }
+nyanpasu-utils = { path = "../nyanpasu-utils", default-features = false, features = ["reqwest"] }
+ipnet = { version = "2", features = ["serde"] }
+reqwest = { version = "0.13", features = ["json", "query", "stream"] }
+reqwest-websocket = "0.6.0"
+serde.workspace = true
+serde_json = "1"
+specta = {
+  version = "^2.0.0-rc.25",
+  features = ["chrono", "derive", "indexmap", "serde_json", "url", "uuid"]
+}
+thiserror.workspace = true
+tokio.workspace = true
+tokio-util = { workspace = true, features = ["codec", "io"] }
+url = "2"
+uuid = { version = "1", features = ["serde"] }
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+tungstenite = { version = "0.28", default-features = false }
+
+[dev-dependencies]
+dhat = "0.3"
+tempfile = "3"
+axum = { workspace = true, features = ["ws"] }
+hyper = { version = "1", features = ["http1", "server"] }
+hyper-util = { version = "0.1", features = ["service", "tokio"] }
+specta-serde = "0.0.12"
+specta-typescript = "0.0.12"
+specta-util = "0.0.12"
+
+[target."cfg(windows)".dev-dependencies]
+windows = {
+  workspace = true,
+  features = [
+    "Win32_Foundation",
+    "Win32_System_JobObjects",
+    "Win32_System_Threading"
+  ]
+}

@@ -1,0 +1,115 @@
+[workspace]
+resolver = '2'
+members = [
+  'tauri',
+  'boa_utils',
+  'nyanpasu-macro',
+  'nyanpasu-core',
+  'nyanpasu-paths',
+  'nyanpasu-helper',
+  'nyanpasu-config',
+  'nyanpasu-traffic',
+  'nyanpasu-tsdb',
+  'nyanpasu-geodata',
+  'nyanpasu-panics',
+  'nyanpasu-platform',
+  'nyanpasu-local-channel',
+  'nyanpasu-widget-protocol',
+  'nyanpasu-widget',
+  'nyanpasu-crash-reporter',
+  'nyanpasu-diagnose',
+  # Test-only deterministic fake clash core. Never packaged as a production
+  # sidecar/resource (see tauri.conf.json externalBin / resources).
+  'fake-core',
+]
+# `nyanpasu-runtime` is a submodule with its own workspace root. Without this
+# exclude, cargo pulls its member crates into this workspace and their
+# `workspace = true` inheritance resolves against this root, which has no
+# `anyhow` entry — surfacing as `dependency.anyhow was not found`.
+# `enable-loopback` also owns an independent workspace; its inherited dependencies
+# must resolve there. Packaging downloads its release rather than building it here.
+exclude = ['nyanpasu-runtime', 'enable-loopback']
+
+[workspace.package]
+repository = 'https://github.com/assassin321/clash-mimo.git'
+edition = '2024'
+license = 'GPL-3.0'
+authors = ['zzzgydi', 'keiko233', 'assassin321']
+
+[workspace.dependencies]
+# --- nyanpasu ---
+# These crates come from the `backend/nyanpasu-runtime` submodule; the gitlink is
+# the pin. `scripts/src/prepare/check.ts` derives the sidecar version from that submodule's
+# `nyanpasu_service/Cargo.toml` and downloads the release tagged with it, so the
+# IPC client and the `nyanpasu-service` binary follow one pin -- but only while
+# the gitlink sits on a released tag. Keep it there. A gitlink moved past the
+# last version bump still reports the old crate version, so `prepare:check`
+# fetches a daemon older than the protocol these crates compile against, and
+# the compat gate cannot see the difference from a version string alone.
+nyanpasu-utils = { path = 'nyanpasu-runtime/crates/nyanpasu-utils', features = [
+  'specta',
+] }
+nyanpasu-ipc = { path = 'nyanpasu-runtime/nyanpasu_ipc', features = [
+  'client',
+  'specta',
+] }  # IPC bridge between the UI process and service process
+clash-api = { path = 'nyanpasu-runtime/crates/clash-api' }
+nyanpasu-core-manager = { path = 'nyanpasu-runtime/crates/nyanpasu-core-manager' }  # Local-host CoreControl (v2 control plane)
+nyanpasu-log-preview = { path = 'nyanpasu-runtime/crates/nyanpasu-utils/log-preview' }  # Bounded payload previews for logs
+
+# --- forks ---
+# `rev` values are the commits Cargo.lock already resolved.
+tracing-test = { git = 'https://github.com/Frando/tracing-test.git', rev = 'e81ec655a5ec5c4351104628b1b1ba694f80a1dc', features = [
+  'no-env-filter',
+  'pretty-log-printing',
+] }
+serde_yaml_ng = { version = '0.10', git = 'https://github.com/libnyanpasu/serde-yaml-ng.git', rev = '363da138dc97f90ef0a356f971c2dc1d8fe04c9e', features = [
+  'specta',
+] }
+sysproxy = { git = 'https://github.com/libnyanpasu/sysproxy-rs.git', version = '0.3', rev = '355d9c98e20f894e75f13049d0031d3794e9a74a' }
+auto-launch = { git = 'https://github.com/libnyanpasu/auto-launch.git', version = '0.5', rev = '729d5429dd689067047489af4a0a32f7013854c8' }
+runas = { git = 'https://github.com/libnyanpasu/rust-runas.git', rev = '29bdb2501c05b7d78e63628bedbd4a190b71bad3' }
+include_url_macro = { git = 'https://github.com/libnyanpasu/include_url_macro', rev = 'fbe47bd71047892a218e3166a2a1bac474488218' }
+
+# --- registry ---
+thiserror = '2'
+snafu = '0.9'
+tracing = '0.1'
+boa_engine = { version = '0.22', features = ['annex-b'] }
+reqwest = { version = '0.13', default-features = false, features = [
+  'charset',
+  'http2',
+  'system-proxy',
+  'json',
+  'stream',
+  'rustls',
+] }
+tokio = { version = '1.54.1', features = ['full'] }
+test-log = { version = '0.2.16', features = ['trace'] }
+fs4 = { version = '1.0.0', features = ['fs-err3-tokio', 'fs-err3'] }
+fs-err = { version = '3.1.2', features = ['tokio'] }
+# Hardware-accelerated hasher. Requires target-feature +aes (+sse2 / +neon);
+# see .cargo/config.toml for the per-target build flags this depends on.
+gxhash = '3'
+
+[patch.crates-io]
+reqwest-websocket = { path = 'nyanpasu-runtime/vendor/reqwest-websocket' }
+# softbuffer 0.4.8 with its CoreGraphics backend reading the top byte as
+# premultiplied alpha, so the statistic widget's software renderer keeps
+# per-pixel transparency on macOS. Drop it once Slint moves to a softbuffer
+# release with the `AlphaMode` API.
+softbuffer = { git = 'https://github.com/libnyanpasu/softbuffer', rev = '6aec276d8b3a60eba555d620ac8e90df53a4f3ad' }
+
+[profile.release]
+panic = 'unwind'
+codegen-units = 1
+lto = true
+opt-level = 's'
+
+# Release code with line tables, so heap profilers can resolve allocation
+# stacks to source lines. Codegen units only change inlining and layout, not
+# what the program allocates, so the profile keeps Cargo's parallel default.
+[profile.profiling]
+inherits = 'release'
+debug = 'line-tables-only'
+codegen-units = 16

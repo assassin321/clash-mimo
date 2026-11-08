@@ -1,0 +1,161 @@
+import { expect, test } from 'vitest'
+import { beyondRetention } from '@/utils/traffic-retention'
+import {
+  setFilter,
+  toggleFilter,
+  toTrafficFilters,
+} from '../src/pages/(main)/main/_modules/traffic-filters'
+import {
+  pollInterval,
+  toQuery,
+  toTopologyRequest,
+  trafficSearchSchema,
+  VIEWS,
+} from '../src/pages/(main)/main/topology/_modules/search'
+import type { TrafficView } from '../src/pages/(main)/main/topology/_modules/traffic-context'
+
+test('an empty search is the last hour of everything with no legacy view', () => {
+  const search = trafficSearchSchema.parse({})
+
+  expect(search).toEqual({
+    range: 'last_hour',
+    scope: 'all',
+    filters: [],
+    metric: 'bytes',
+    limit: 7,
+  })
+  expect(search).not.toHaveProperty('view')
+  expect(toQuery(search)).toEqual({
+    range: 'last_hour',
+    scope: 'all',
+    filters: [],
+  })
+})
+
+test('the filters of the url become the filters of the query', () => {
+  const search = trafficSearchSchema.parse({
+    filters: [{ d: 'target', v: 'example.com' }],
+  })
+
+  expect(toQuery(search).filters).toEqual([
+    { dimension: 'target', value: 'example.com' },
+  ])
+})
+
+test('the short filters of the url become the backend filters', () => {
+  expect(toTrafficFilters([{ d: 'rule', v: 'Match' }])).toEqual([
+    { dimension: 'rule', value: 'Match' },
+  ])
+})
+
+test('the old proxy parameter and unknown dimensions are not accepted', () => {
+  expect(trafficSearchSchema.parse({ proxy: 'Node-A' })).not.toHaveProperty(
+    'proxy',
+  )
+  expect(
+    trafficSearchSchema.safeParse({ filters: [{ d: 'nope', v: 'x' }] }).success,
+  ).toBe(false)
+})
+
+test('legacy URLs may still select any traffic view', () => {
+  expect(VIEWS).toEqual([
+    'overview',
+    'flow',
+    'map',
+    'source',
+    'inbound',
+    'target',
+    'exit',
+    'process',
+  ])
+
+  for (const view of VIEWS) {
+    expect(trafficSearchSchema.parse({ view }).view).toBe(view)
+  }
+
+  expect(trafficSearchSchema.safeParse({ view: 'unknown' }).success).toBe(false)
+})
+
+test('a filter on a dimension that has one replaces it in place', () => {
+  const filters = [
+    { d: 'target' as const, v: 'a' },
+    { d: 'inbound' as const, v: 'mixed' },
+  ]
+
+  expect(setFilter(filters, 'target', 'b')).toEqual([
+    { d: 'target', v: 'b' },
+    { d: 'inbound', v: 'mixed' },
+  ])
+  expect(setFilter(filters, 'exit', 'Node-A')).toEqual([
+    ...filters,
+    { d: 'exit', v: 'Node-A' },
+  ])
+})
+
+test('toggling the filter that is set removes it', () => {
+  const filters = [{ d: 'target' as const, v: 'a' }]
+
+  expect(toggleFilter(filters, 'target', 'a')).toEqual([])
+  expect(toggleFilter(filters, 'target', 'b')).toEqual([
+    { d: 'target', v: 'b' },
+  ])
+  // The empty key of "no policy group" is a value like any other.
+  expect(toggleFilter([], 'chain', '')).toEqual([{ d: 'chain', v: '' }])
+})
+
+test('ranges up to 24 hours poll every 2 s, longer ones every 10 s', () => {
+  expect(
+    (['last_hour', 'last6_hours', 'last24_hours'] as const).map(pollInterval),
+  ).toEqual([2_000, 2_000, 2_000])
+  expect(
+    (['last7_days', 'last30_days', 'all'] as const).map(pollInterval),
+  ).toEqual([10_000, 10_000, 10_000])
+})
+
+test('a range is beyond the retention when it reaches back further', () => {
+  expect(beyondRetention('last24_hours', '1d')).toBe(false)
+  expect(beyondRetention('last7_days', '1d')).toBe(true)
+  expect(beyondRetention('last7_days', '7d')).toBe(false)
+  expect(beyondRetention('last30_days', '7d')).toBe(true)
+  expect(beyondRetention('last30_days', '30d')).toBe(false)
+  expect(beyondRetention('last30_days', 'forever')).toBe(false)
+  // Everything kept, whatever that is, and nothing is known before it loads.
+  expect(beyondRetention('all', '1d')).toBe(false)
+  expect(beyondRetention('last30_days', undefined)).toBe(false)
+})
+
+// The page shown, with the rest of the search as the URL holds it.
+const topologyOf = (view: TrafficView, search: Record<string, unknown> = {}) =>
+  toTopologyRequest({ ...trafficSearchSchema.parse(search), view })
+
+test('only flow and map requests include topology', () => {
+  expect(topologyOf('overview')).toBeNull()
+  expect(topologyOf('process')).toBeNull()
+  expect(topologyOf('flow')).toEqual({
+    layers: ['origin', 'rule', 'chain', 'exit'],
+    limit_per_layer: 7,
+  })
+  expect(topologyOf('flow', { layers: 'source' })?.layers).toEqual([
+    'source',
+    'target',
+    'exit',
+  ])
+  expect(topologyOf('map')).toEqual({
+    layers: ['source_region', 'destination_region', 'destination_basis'],
+    limit_per_layer: null,
+  })
+  expect(trafficSearchSchema.safeParse({ layers: 'nope' }).success).toBe(false)
+})
+
+test('the limit is a count or all, and all asks for no limit', () => {
+  const request = (limit: unknown) => topologyOf('flow', { limit })!
+
+  expect(request(undefined).limit_per_layer).toBe(7)
+  expect(request(5).limit_per_layer).toBe(5)
+  expect(request(20).limit_per_layer).toBe(20)
+  expect(request('all').limit_per_layer).toBeNull()
+  // The map places every region whatever the limit.
+  expect(topologyOf('map', { limit: 5 })!.limit_per_layer).toBeNull()
+  expect(trafficSearchSchema.safeParse({ limit: 6 }).success).toBe(false)
+  expect(trafficSearchSchema.safeParse({ limit: '7' }).success).toBe(false)
+})

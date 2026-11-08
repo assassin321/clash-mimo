@@ -1,0 +1,140 @@
+import { AnimatePresence } from 'motion/react'
+import { ComponentProps, useState } from 'react'
+import { Controller, useForm } from 'react-hook-form'
+import { z } from 'zod'
+import { Input } from '@nyanpasu/ui/input'
+import { ModalTrigger } from '@nyanpasu/ui/modal'
+import { useBlockTask } from '@/components/providers/block-task-provider'
+import { m } from '@/paraglide/messages'
+import { formatError } from '@/utils'
+import { message } from '@/utils/notification'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useLockFn } from '@nyanpasu/hooks'
+import { getRemoteSource, useProfileMutations } from '@nyanpasu/query'
+import {
+  type ProfileDefinition_Deserialize,
+  type ProfileItem_Serialize,
+} from '@nyanpasu/rpc/types'
+import { subscriptionUrlSchema } from '../../../_modules/subscription-url-schema'
+import AnimatedErrorItem from '../../../../_modules/error-item'
+import ProfileFieldDialog from './profile-field-dialog'
+
+const formSchema = z.object({
+  url: subscriptionUrlSchema,
+})
+
+/** The definition with its remote source pointed at `url`. */
+const withRemoteUrl = (
+  profile: ProfileItem_Serialize,
+  url: string,
+): ProfileDefinition_Deserialize | undefined => {
+  const remote = getRemoteSource(profile)
+  if (!remote) return undefined
+  const source = { ...remote, url }
+  if (profile.type === 'transform') {
+    return { type: 'transform', transform: { ...profile.transform, source } }
+  }
+  if (profile.config.type !== 'file') return undefined
+  return { type: 'config', config: { ...profile.config, source } }
+}
+
+export default function SubscriptionUrlEditor({
+  profile,
+  ...props
+}: ComponentProps<typeof ModalTrigger> & {
+  profile: ProfileItem_Serialize
+}) {
+  const { replaceDefinition, update } = useProfileMutations()
+
+  const [open, setOpen] = useState(false)
+
+  const currentUrl = getRemoteSource(profile)?.url ?? ''
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      url: currentUrl,
+    },
+  })
+
+  const handleClose = () => {
+    setOpen(false)
+    // get latest name
+    form.reset({
+      url: currentUrl,
+    })
+  }
+
+  const blockTask = useBlockTask(
+    `update-remote-profile-url-${profile.uid}`,
+    form.handleSubmit(
+      async ({ url }) => {
+        try {
+          const definition = withRemoteUrl(profile, url)
+          if (definition) {
+            await replaceDefinition.mutateAsync({
+              uid: profile.uid,
+              definition,
+            })
+            // The materialized file still holds the old subscription until a
+            // refresh; re-download from the new url immediately so the active
+            // rebuild does not keep serving stale content.
+            await update.mutateAsync({ uid: profile.uid, option: null })
+          }
+
+          handleClose()
+        } catch (error) {
+          message(m.profile_update_failed({ error: formatError(error) }), {
+            title: m.profile_error_title(),
+            kind: 'error',
+            error,
+          })
+        }
+      },
+      (error) => {
+        console.error(error)
+        message(formatError(error.url?.message ?? ''), {
+          title: m.profile_error_title(),
+          kind: 'error',
+        })
+      },
+    ),
+  )
+
+  const handleSubmit = useLockFn(blockTask.execute)
+
+  return (
+    <ProfileFieldDialog
+      {...props}
+      title={m.profile_subscription_url_editor_label()}
+      open={open}
+      onOpenChange={setOpen}
+      onSave={handleSubmit}
+      onCancel={handleClose}
+      saving={blockTask.isPending}
+      field={
+        <Controller
+          control={form.control}
+          name="url"
+          render={({ field }) => (
+            <div className="space-y-2">
+              <Input
+                label={m.profile_subscription_url_label()}
+                variant="outlined"
+                {...field}
+              />
+
+              <AnimatePresence>
+                {form.formState.errors.url && (
+                  <AnimatedErrorItem className="text-error">
+                    {form.formState.errors.url?.message}
+                  </AnimatedErrorItem>
+                )}
+              </AnimatePresence>
+            </div>
+          )}
+        />
+      }
+    />
+  )
+}

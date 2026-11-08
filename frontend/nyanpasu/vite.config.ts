@@ -1,0 +1,151 @@
+import path from 'node:path'
+import AutoImport from 'unplugin-auto-import/vite'
+import IconsResolver from 'unplugin-icons/resolver'
+import Icons from 'unplugin-icons/vite'
+import { defineConfig, UserConfig } from 'vite'
+import { createHtmlPlugin } from 'vite-plugin-html'
+import svgr from 'vite-plugin-svgr'
+import { paraglideVitePlugin } from '@inlang/paraglide-js'
+import tailwindPlugin from '@tailwindcss/vite'
+import { tanstackRouter } from '@tanstack/router-plugin/vite'
+import legacy from '@vitejs/plugin-legacy'
+import react from '@vitejs/plugin-react'
+
+const IS_NIGHTLY = process.env.NIGHTLY?.toLowerCase() === 'true'
+
+// https://vitejs.dev/config/
+export default defineConfig(({ command, mode }) => {
+  const isDev = command === 'serve'
+
+  const config = {
+    // root: "/",
+    clearScreen: false,
+    server: {
+      port: 3000,
+    },
+    plugins: [
+      tailwindPlugin(),
+      legacy({
+        renderLegacyChunks: false,
+        modernTargets: ['edge>=109', 'safari>=15'],
+        modernPolyfills: true,
+        additionalModernPolyfills: [
+          'core-js/modules/es.object.has-own.js',
+          'core-js/modules/web.structured-clone.js',
+          'core-js/modules/es.array.at.js',
+        ],
+      }),
+      createHtmlPlugin({
+        inject: {
+          data: {
+            title: 'Clash Mimo',
+            injectScript:
+              mode === 'development'
+                ? '<script src="https://unpkg.com/react-scan/dist/auto.global.js"></script>'
+                : '',
+          },
+        },
+      }),
+      tanstackRouter({
+        target: 'react',
+        autoCodeSplitting: true,
+        routesDirectory: `src/pages`,
+        generatedRouteTree: `src/route-tree.gen.ts`,
+        routeFileIgnorePattern: '_modules',
+      }),
+      svgr({
+        svgrOptions: { jsxRuntime: 'automatic', prettier: false },
+        oxcOptions: {
+          jsx: { runtime: 'automatic' },
+        },
+      }),
+      react(),
+      AutoImport({
+        resolvers: [
+          IconsResolver({
+            prefix: 'Icon',
+            extension: 'jsx',
+          }),
+        ],
+      }),
+      Icons({
+        compiler: 'jsx', // or 'solid'
+      }),
+      paraglideVitePlugin({
+        project: './project.inlang',
+        outdir: './src/paraglide',
+        // `custom-extension` reports the locale cached from a previous run and
+        // returns undefined on a first launch, so `baseLocale` has to terminate
+        // the chain. `LanguageProvider` then applies the system-derived
+        // language the backend resolved.
+        strategy: ['custom-extension', 'baseLocale'],
+      }),
+    ],
+    resolve: {
+      alias: [
+        { find: '@root', replacement: path.resolve('../../') },
+        { find: '@repo', replacement: path.resolve('../../') },
+        { find: '@', replacement: path.resolve('./src') },
+        { find: '~', replacement: path.resolve('.') },
+        {
+          // monaco-worker-manager (monaco-yaml dep) still imports the pre-0.56
+          // deep `monaco-editor/esm/vs/*` paths; rewrite them to specifiers the
+          // new exports map resolves to the same files.
+          find: /^monaco-editor\/esm\/vs\//,
+          replacement: 'monaco-editor/',
+        },
+      ],
+      dedupe: ['react', 'react-dom', '@tanstack/react-query'],
+    },
+    optimizeDeps: {
+      entries: ['./src/main.tsx'],
+      include: ['@tauri-apps/api', 'clsx', 'react', 'react-dom'],
+    },
+    // esbuild: {
+    //   drop: isDev ? undefined : ['debugger'],
+    //   pure: isDev || IS_NIGHTLY ? [] : ['console.log'],
+    // },
+    worker: {
+      format: 'es',
+      rolldownOptions: {
+        output: {
+          manualChunks: (id) => {
+            if (id.includes('monaco-editor/esm/vs/language/css/css.worker')) {
+              return 'css-worker'
+            }
+
+            if (id.includes('monaco-editor/esm/vs/language/json/json.worker')) {
+              return 'json-worker'
+            }
+
+            if (
+              id.includes('monaco-editor/esm/vs/language/typescript/ts.worker')
+            ) {
+              return 'ts-worker'
+            }
+
+            if (id.includes('monaco-editor/esm/vs/editor/editor.worker')) {
+              return 'editor-worker'
+            }
+
+            if (id.includes('monaco-yaml/yaml.worker')) {
+              return 'yaml-worker'
+            }
+          },
+        },
+      },
+    },
+    build: {
+      outDir: '../../backend/tauri/tmp/dist',
+      emptyOutDir: true,
+      sourcemap: isDev || IS_NIGHTLY ? 'inline' : false,
+    },
+    define: {
+      OS_PLATFORM: `"${process.platform}"`,
+      WIN_PORTABLE: !!process.env.VITE_WIN_PORTABLE,
+      IS_NIGHTLY: IS_NIGHTLY,
+    },
+    html: {},
+  } satisfies UserConfig
+  return config
+})

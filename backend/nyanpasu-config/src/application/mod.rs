@@ -1,0 +1,572 @@
+use csscolorparser::Color as CssColor;
+use serde::{Deserialize, Serialize};
+use specta::Type;
+use struct_patch::Patch;
+use url::Url;
+
+mod clash_core;
+mod core_logs;
+mod i18n;
+mod logging;
+mod traffic;
+mod update;
+mod widget;
+mod window_close;
+pub use clash_core::*;
+pub use core_logs::*;
+pub use i18n::*;
+pub use logging::*;
+pub use traffic::*;
+pub use update::*;
+pub use widget::*;
+pub use window_close::*;
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, Serialize, Default, Type)]
+#[serde(rename_all = "snake_case")]
+pub enum ProxiesSelectorMode {
+    Hidden,
+    #[default]
+    Normal,
+    Submenu,
+}
+
+/// Whether the tray menu uses the system-native menu or the WebView menu.
+///
+/// Platform-dependent default: `Webview` on Windows, `Native` elsewhere.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, Serialize, Type)]
+#[serde(rename_all = "snake_case")]
+pub enum TrayMenuMode {
+    Native,
+    Webview,
+}
+
+impl Default for TrayMenuMode {
+    fn default() -> Self {
+        if cfg!(windows) {
+            TrayMenuMode::Native
+        } else {
+            TrayMenuMode::Native
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, Serialize, Default, Type)]
+#[serde(rename_all = "snake_case")]
+pub enum ThemeMode {
+    Light,
+    Dark,
+    #[default]
+    System,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, Serialize, Type)]
+#[serde(rename_all = "snake_case")]
+pub enum ReleaseChannel {
+    Stable,
+    Beta,
+    Nightly,
+}
+
+impl ReleaseChannel {
+    pub fn resolve(self, preference: Option<Self>) -> Self {
+        if self == Self::Nightly {
+            Self::Nightly
+        } else {
+            preference.unwrap_or(self)
+        }
+    }
+}
+
+/// ### `verge.yaml` schema
+#[derive(Debug, Clone, Deserialize, Serialize, specta::Type, Patch)]
+#[patch(attribute(serde_with::skip_serializing_none))]
+#[patch(attribute(derive(Debug, Default, Clone, Serialize, Deserialize, specta::Type)))]
+#[patch(attribute(serde(default)))]
+pub struct NyanpasuAppConfig {
+    /// app listening port for app singleton
+    pub app_singleton_port: u16,
+
+    /// app log level
+    /// silent | error | warn | info | debug | trace
+    pub app_log_level: LoggingLevel,
+
+    /// Core log disk settings, applied as soon as they are committed.
+    #[serde(default)]
+    pub core_logs: CoreLogSettings,
+
+    // i18n
+    pub language: I18nLanguage,
+
+    /// `light` or `dark` or `system`
+    pub theme_mode: ThemeMode,
+
+    /// enable traffic graph
+    pub traffic_graph: bool,
+
+    /// show memory info (only for Clash Meta)
+    pub enable_memory_usage: bool,
+
+    /// global ui framer motion effects
+    pub lighten_animation_effects: bool,
+
+    /// service mode
+    pub enable_service_mode: bool,
+
+    /// can the app auto startup
+    pub enable_auto_launch: bool,
+
+    /// not show the window on launch
+    pub enable_silent_start: bool,
+
+    /// set system proxy
+    pub enable_system_proxy: bool,
+
+    /// enable proxy guard
+    pub enable_proxy_guard: bool,
+
+    /// set system proxy bypass
+    pub system_proxy_bypass: String,
+
+    /// proxy guard interval
+    #[patch(attribute(serde(alias = "proxy_guard_duration")))]
+    pub proxy_guard_interval: u64,
+
+    /// theme setting
+    #[specta(type = String)]
+    #[patch(attribute(specta(type = String)))]
+    pub theme_color: CssColor,
+
+    /// clash core path
+    #[patch(attribute(serde(alias = "clash_core")))]
+    pub core: ClashCore,
+
+    /// hotkey map
+    /// format: {func},{key}
+    pub hotkeys: Vec<String>,
+
+    /// 默认的延迟测试连接
+    pub default_latency_test: String,
+
+    /// Latency test timeout in milliseconds.
+    #[serde(default = "default_latency_timeout_ms")]
+    pub default_latency_timeout_ms: u64,
+
+    /// 是否使用内部的脚本支持，默认为真
+    pub enable_builtin_enhanced: bool,
+
+    /// proxy 页面布局 列数
+    pub proxy_layout_column: i32,
+
+    /// 最多保留的日志文件数
+    pub max_log_files: usize,
+
+    /// 单个日志文件的大小上限，单位：MiB
+    #[serde(default = "default_max_log_file_size")]
+    pub max_log_file_size: u64,
+
+    /// Check update when app launch
+    pub enable_auto_check_update: bool,
+
+    /// Download application updates automatically after they are found
+    #[serde(default)]
+    pub enable_auto_download_update: bool,
+
+    /// None in older configurations means the channel of the installed build.
+    #[serde(default)]
+    #[patch(attribute(serde(default, with = "::serde_with::rust::double_option")))]
+    #[patch(attribute(specta(type = Option<Option<ReleaseChannel>>)))]
+    pub release_channel: Option<ReleaseChannel>,
+
+    /// Enabled application update package download sources, in priority order.
+    #[serde(default = "default_update_sources")]
+    pub update_sources: Vec<UpdateSource>,
+
+    /// 是否启用代理托盘选择
+    #[patch(attribute(serde(alias = "clash_tray_selector")))]
+    pub tray_selector_mode: ProxiesSelectorMode,
+
+    /// 是否窗口置顶
+    pub always_on_top: bool,
+
+    /// 托盘菜单模式：系统原生菜单还是 WebView 菜单
+    /// 平台相关默认值：`native`
+    pub tray_menu_mode: TrayMenuMode,
+
+    /// 窗口关闭时的行为：销毁还是隐藏，可按窗口种类单独设定
+    #[patch(nesting)]
+    #[serde(default)]
+    pub window_close: WindowCloseSettings,
+
+    /// 是否启用网络统计信息浮窗
+    pub network_statistic_widget: NetworkStatisticWidgetConfig,
+
+    /// Which logo the network statistic widget shows
+    #[serde(default)]
+    pub network_statistic_widget_logo: NetworkStatisticWidgetLogo,
+
+    /// How long recorded traffic is kept
+    #[serde(default)]
+    pub traffic_retention: TrafficRetention,
+
+    /// Allow public IP probes to locate LAN/local traffic sources.
+    #[serde(default)]
+    pub enable_local_ip_probe: bool,
+
+    /// PAC URL for automatic proxy configuration
+    /// This field is used to set PAC proxy without exposing it to the frontend UI
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[patch(attribute(serde(default, with = "::serde_with::rust::double_option")))]
+    #[patch(attribute(specta(type = Option<Option<Url>>)))]
+    pub pac_url: Option<Url>,
+
+    /// enable tray text display on Linux systems
+    /// When enabled, shows proxy and TUN mode status as text next to the tray icon
+    /// When disabled, only shows status via icon changes (prevents text display issues on Wayland)
+    pub enable_tray_text: bool,
+
+    /// enable traffic information display in system tray
+    /// When enabled, shows upload/download speeds in the tray tooltip (macOS/Windows) or title (Linux)
+    pub enable_tray_traffic: bool,
+
+    /// Use legacy UI (original UI at "/" route)
+    /// When true, opens legacy window; when false, opens new main window
+    pub use_legacy_ui: bool,
+
+    /// enable colored tray icons on macOS
+    /// When enabled, uses colored icons instead of template icons to show proxy status
+    /// When disabled, uses system template icons that adapt to light/dark mode
+    // Kept out of the TS bindings: a macOS-only field would make the generated
+    // bindings differ per platform, and CI checks their freshness on Linux.
+    #[cfg(target_os = "macos")]
+    #[specta(skip)]
+    #[patch(attribute(specta(skip)))]
+    pub enable_macos_colored_icons: bool,
+}
+
+/// The latency test timeout a fresh or upgraded install starts with.
+pub const DEFAULT_LATENCY_TIMEOUT_MS: u64 = 5000;
+
+fn default_latency_timeout_ms() -> u64 {
+    DEFAULT_LATENCY_TIMEOUT_MS
+}
+
+/// A latency test waits between one and thirty seconds: Mihomo parses a single-node
+/// timeout as int16 milliseconds and the API adapter bounds every call.
+pub fn validate_latency_timeout(timeout_ms: u64) -> Result<(), &'static str> {
+    if (1000..=30000).contains(&timeout_ms) {
+        Ok(())
+    } else {
+        Err("the latency test timeout must be between 1 and 30 seconds")
+    }
+}
+
+fn default_max_log_file_size() -> u64 {
+    10
+}
+
+impl Default for NyanpasuAppConfig {
+    fn default() -> Self {
+        Self {
+            app_singleton_port: 0,
+            app_log_level: LoggingLevel::default(),
+            core_logs: CoreLogSettings::default(),
+            language: default_i18n_language(),
+            theme_mode: ThemeMode::System,
+            traffic_graph: true,
+            enable_memory_usage: true,
+            lighten_animation_effects: false,
+            enable_service_mode: false,
+            enable_auto_launch: false,
+            enable_silent_start: false,
+            enable_system_proxy: false,
+            enable_proxy_guard: false,
+            system_proxy_bypass: String::new(),
+            proxy_guard_interval: 30,
+            theme_color: CssColor::from_rgba8(24, 103, 192, 255),
+            core: ClashCore::default(),
+            hotkeys: Vec::new(),
+            default_latency_test: "http://www.gstatic.com/generate_204".into(),
+            default_latency_timeout_ms: default_latency_timeout_ms(),
+            enable_builtin_enhanced: true,
+            proxy_layout_column: 0,
+            max_log_files: 7,
+            max_log_file_size: default_max_log_file_size(),
+            enable_auto_check_update: true,
+            enable_auto_download_update: false,
+            release_channel: None,
+            update_sources: default_update_sources(),
+            tray_selector_mode: ProxiesSelectorMode::default(),
+            always_on_top: false,
+            tray_menu_mode: TrayMenuMode::default(),
+            window_close: WindowCloseSettings::default(),
+            network_statistic_widget: NetworkStatisticWidgetConfig::default(),
+            network_statistic_widget_logo: NetworkStatisticWidgetLogo::default(),
+            traffic_retention: TrafficRetention::default(),
+            enable_local_ip_probe: false,
+            pac_url: None,
+            enable_tray_text: false,
+            enable_tray_traffic: false,
+            use_legacy_ui: false,
+            #[cfg(target_os = "macos")]
+            enable_macos_colored_icons: false,
+        }
+    }
+}
+
+#[cfg(test)]
+mod patch_tests {
+    use super::*;
+    use struct_patch::Status;
+
+    #[test]
+    fn latency_timeout_defaults_when_missing_and_is_bounded() {
+        let mut value = serde_json::to_value(NyanpasuAppConfig::default()).unwrap();
+        value
+            .as_object_mut()
+            .unwrap()
+            .remove("default_latency_timeout_ms");
+        let config: NyanpasuAppConfig = serde_json::from_value(value).unwrap();
+        assert_eq!(
+            config.default_latency_timeout_ms,
+            DEFAULT_LATENCY_TIMEOUT_MS
+        );
+
+        assert!(validate_latency_timeout(1000).is_ok());
+        assert!(validate_latency_timeout(30000).is_ok());
+        assert!(validate_latency_timeout(999).is_err());
+        assert!(validate_latency_timeout(30001).is_err());
+    }
+
+    #[test]
+    fn local_ip_probe_requires_opt_in_and_can_be_patched() {
+        let mut value = serde_json::to_value(NyanpasuAppConfig::default()).unwrap();
+        value
+            .as_object_mut()
+            .unwrap()
+            .remove("enable_local_ip_probe");
+        let mut config: NyanpasuAppConfig = serde_json::from_value(value).unwrap();
+        assert!(!config.enable_local_ip_probe);
+        let patch = serde_json::from_str(r#"{"enable_local_ip_probe":true}"#).unwrap();
+        config.apply(patch);
+        assert!(config.enable_local_ip_probe);
+    }
+
+    #[test]
+    fn update_sources_default_for_existing_configurations_and_keep_patch_order() {
+        let mut value = serde_json::to_value(NyanpasuAppConfig::default()).unwrap();
+        value.as_object_mut().unwrap().remove("update_sources");
+        let config: NyanpasuAppConfig = serde_json::from_value(value).unwrap();
+        assert_eq!(config.update_sources, default_update_sources());
+        let patch: NyanpasuAppConfigPatch = serde_json::from_str(
+            r#"{"update_sources":["ghfast","sourceforge","github","nyanpasu"]}"#,
+        )
+        .unwrap();
+        assert_eq!(
+            patch.update_sources,
+            Some(vec![
+                UpdateSource::Ghfast,
+                UpdateSource::Sourceforge,
+                UpdateSource::Github,
+                UpdateSource::Nyanpasu
+            ])
+        );
+        assert!(
+            serde_json::from_str::<NyanpasuAppConfigPatch>(r#"{"update_sources":["unknown"]}"#)
+                .is_err()
+        );
+    }
+
+    #[test]
+    fn release_channel_defaults_for_existing_configurations() {
+        let mut value = serde_json::to_value(NyanpasuAppConfig::default()).unwrap();
+        value.as_object_mut().unwrap().remove("release_channel");
+        let config: NyanpasuAppConfig = serde_json::from_value(value).unwrap();
+        assert_eq!(config.release_channel, None);
+        let patch: NyanpasuAppConfigPatch =
+            serde_json::from_str(r#"{"release_channel":"beta"}"#).unwrap();
+        assert_eq!(patch.release_channel, Some(Some(ReleaseChannel::Beta)));
+    }
+
+    #[test]
+    fn widget_logo_defaults_for_existing_configurations() {
+        let mut value = serde_json::to_value(NyanpasuAppConfig::default()).unwrap();
+        value
+            .as_object_mut()
+            .unwrap()
+            .remove("network_statistic_widget_logo");
+        let config: NyanpasuAppConfig = serde_json::from_value(value).unwrap();
+        assert_eq!(
+            config.network_statistic_widget_logo,
+            NetworkStatisticWidgetLogo::default()
+        );
+    }
+
+    #[test]
+    fn max_log_file_size_defaults_for_existing_configurations() {
+        let mut value = serde_json::to_value(NyanpasuAppConfig::default()).unwrap();
+        value.as_object_mut().unwrap().remove("max_log_file_size");
+        let config: NyanpasuAppConfig = serde_json::from_value(value).unwrap();
+        assert_eq!(config.max_log_file_size, 10);
+    }
+
+    #[test]
+    fn auto_download_update_defaults_off_for_defaults_and_existing_configurations() {
+        assert!(!NyanpasuAppConfig::default().enable_auto_download_update);
+
+        let mut value = serde_json::to_value(NyanpasuAppConfig::default()).unwrap();
+        value
+            .as_object_mut()
+            .unwrap()
+            .remove("enable_auto_download_update");
+        let config: NyanpasuAppConfig = serde_json::from_value(value).unwrap();
+        assert!(!config.enable_auto_download_update);
+    }
+
+    #[test]
+    fn auto_download_update_is_patchable() {
+        let patch: NyanpasuAppConfigPatch =
+            serde_json::from_str(r#"{"enable_auto_download_update":true}"#).unwrap();
+        assert_eq!(patch.enable_auto_download_update, Some(true));
+
+        let mut config = NyanpasuAppConfig::default();
+        config.apply(patch);
+        assert!(config.enable_auto_download_update);
+    }
+
+    #[test]
+    fn traffic_retention_defaults_for_existing_configurations() {
+        let mut value = serde_json::to_value(NyanpasuAppConfig::default()).unwrap();
+        value.as_object_mut().unwrap().remove("traffic_retention");
+        let config: NyanpasuAppConfig = serde_json::from_value(value).unwrap();
+        assert_eq!(config.traffic_retention, TrafficRetention::SevenDays);
+    }
+
+    #[test]
+    fn traffic_retention_wire_format_and_patch() {
+        for (text, retention) in [
+            ("1d", TrafficRetention::OneDay),
+            ("7d", TrafficRetention::SevenDays),
+            ("30d", TrafficRetention::ThirtyDays),
+            ("90d", TrafficRetention::NinetyDays),
+            ("forever", TrafficRetention::Forever),
+        ] {
+            assert_eq!(
+                serde_json::to_string(&retention).unwrap(),
+                format!("\"{text}\"")
+            );
+            let patch: NyanpasuAppConfigPatch =
+                serde_json::from_str(&format!(r#"{{"traffic_retention":"{text}"}}"#)).unwrap();
+            assert_eq!(patch.traffic_retention, Some(retention));
+        }
+        assert!(
+            serde_json::from_str::<NyanpasuAppConfigPatch>(r#"{"traffic_retention":"2d"}"#)
+                .is_err()
+        );
+
+        let mut config = NyanpasuAppConfig::default();
+        config.apply(NyanpasuAppConfigPatch {
+            traffic_retention: Some(TrafficRetention::Forever),
+            ..NyanpasuAppConfig::new_empty_patch()
+        });
+        assert_eq!(config.traffic_retention, TrafficRetention::Forever);
+    }
+
+    #[test]
+    fn traffic_retention_durations() {
+        let day = std::time::Duration::from_secs(24 * 60 * 60);
+        assert_eq!(TrafficRetention::OneDay.duration(), Some(day));
+        assert_eq!(TrafficRetention::SevenDays.duration(), Some(7 * day));
+        assert_eq!(TrafficRetention::ThirtyDays.duration(), Some(30 * day));
+        assert_eq!(TrafficRetention::NinetyDays.duration(), Some(90 * day));
+        assert_eq!(TrafficRetention::Forever.duration(), None);
+    }
+
+    /// The legacy field aliases carried over from the former derive-builder
+    /// partial must still decode onto the generated `NyanpasuAppConfigPatch`.
+    #[test]
+    fn patch_honours_legacy_aliases() {
+        let patch: NyanpasuAppConfigPatch = serde_yaml_ng::from_str(
+            "proxy_guard_duration: 45\nclash_core: mihomo\nclash_tray_selector: hidden\n",
+        )
+        .expect("aliased patch must deserialize");
+
+        assert_eq!(patch.proxy_guard_interval, Some(45));
+        assert_eq!(patch.core, Some(ClashCore::Mihomo));
+        assert_eq!(patch.tray_selector_mode, Some(ProxiesSelectorMode::Hidden));
+        // Untouched fields stay absent.
+        assert_eq!(patch.app_singleton_port, None);
+        assert!(!patch.is_empty());
+    }
+
+    /// An absent field must serialize away (skip_serializing_none on the patch),
+    /// so a partial patch round-trips to only the fields it carries.
+    #[test]
+    fn patch_skips_none_on_serialize() {
+        let mut patch = NyanpasuAppConfig::new_empty_patch();
+        patch.traffic_graph = Some(false);
+
+        let dumped = serde_yaml_ng::to_string(&patch).expect("serialize patch");
+        assert!(dumped.contains("traffic_graph: false"), "got:\n{dumped}");
+        assert!(
+            !dumped.contains("app_singleton_port"),
+            "absent fields must be skipped, got:\n{dumped}"
+        );
+    }
+
+    /// Tray menu settings decode from their snake_case wire form onto the patch,
+    /// and the mode keeps its platform-dependent default.
+    #[test]
+    fn tray_menu_settings_wire_format() {
+        let patch: NyanpasuAppConfigPatch =
+            serde_yaml_ng::from_str("tray_menu_mode: native\nwindow_close:\n  tray_menu: hide\n")
+                .expect("tray menu patch must deserialize");
+
+        assert_eq!(patch.tray_menu_mode, Some(TrayMenuMode::Native));
+        assert_eq!(
+            patch.window_close.tray_menu,
+            Some(WindowCloseOverride::Hide)
+        );
+
+        let expected_mode = if cfg!(windows) {
+            TrayMenuMode::Native
+        } else {
+            TrayMenuMode::Native
+        };
+        assert_eq!(TrayMenuMode::default(), expected_mode);
+
+        let mut patch = NyanpasuAppConfig::new_empty_patch();
+        patch.tray_menu_mode = Some(TrayMenuMode::Webview);
+        let dumped = serde_yaml_ng::to_string(&patch).expect("serialize patch");
+        assert!(dumped.contains("tray_menu_mode: webview"), "got:\n{dumped}");
+    }
+
+    /// `pac_url` (struct-level `skip_serializing_none` + `double_option`):
+    /// absent decodes to keep, explicit `null` to clear, `Some(None)` serializes
+    /// as `null` while an absent field is skipped.
+    #[test]
+    fn pac_url_double_option_wire_semantics() {
+        let keep: NyanpasuAppConfigPatch =
+            serde_yaml_ng::from_str("traffic_graph: true\n").expect("patch must deserialize");
+        assert_eq!(keep.pac_url, None, "absent decodes to outer None (keep)");
+
+        let clear: NyanpasuAppConfigPatch =
+            serde_yaml_ng::from_str("pac_url: null\n").expect("patch must deserialize");
+        assert_eq!(
+            clear.pac_url,
+            Some(None),
+            "null decodes to Some(None) (clear)"
+        );
+
+        let mut patch = NyanpasuAppConfig::new_empty_patch();
+        patch.pac_url = Some(None);
+        let dumped = serde_yaml_ng::to_string(&patch).expect("serialize patch");
+        assert!(
+            dumped.contains("pac_url: null"),
+            "Some(None) -> null, got:\n{dumped}"
+        );
+        assert!(
+            !dumped.contains("theme_mode"),
+            "absent skipped, got:\n{dumped}"
+        );
+    }
+}

@@ -1,0 +1,50 @@
+import { createRoot } from 'react-dom/client'
+import { afterEach, beforeEach, expect, test, vi } from 'vitest'
+import { useSetting } from '@nyanpasu/query'
+import { QueryClient } from '@tanstack/react-query'
+import { clearMocks, mockIPC } from '@tauri-apps/api/mocks'
+import { TestQueryProvider as QueryClientProvider } from './query-provider'
+
+// Generated commands take the desktop IPC path that `mockIPC` serves.
+beforeEach(() => vi.stubGlobal('isTauri', true))
+afterEach(() => vi.unstubAllGlobals())
+
+test('a setting consumer does not re-render when a refetch finds nothing new', async ({
+  onTestFinished,
+}) => {
+  mockIPC((wireCommand, args) => {
+    expect(wireCommand).toBe('call_rpc')
+    const { method } = args as { method: string }
+    expect(method).toBe('get_app_config')
+    return { theme_mode: 'dark', always_on_top: false }
+  })
+  const queries = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  })
+  let renders = 0
+  function Probe() {
+    const { value } = useSetting('theme_mode')
+    renders += 1
+    return <span>{value}</span>
+  }
+  const container = document.createElement('div')
+  document.body.append(container)
+  const root = createRoot(container)
+  onTestFinished(() => {
+    root.unmount()
+    container.remove()
+    queries.clear()
+    clearMocks()
+  })
+  root.render(
+    <QueryClientProvider client={queries}>
+      <Probe />
+    </QueryClientProvider>,
+  )
+  await expect.poll(() => container.textContent).toBe('dark')
+
+  const before = renders
+  await queries.refetchQueries()
+  await new Promise((resolve) => setTimeout(resolve, 100))
+  expect(renders - before).toBe(0)
+})

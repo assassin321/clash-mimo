@@ -1,0 +1,43 @@
+// nyanpasu merge profile chain template
+const merge = `# Clash Mimo Merge Template (YAML)
+# Documentation on https://nyanpasu.org/
+# Set the default merge strategy to recursive merge. 
+# Enable the old mode with the override__ prefix. 
+# Use the filter__ prefix to filter lists (removing unwanted content). 
+# All prefixes should support accessing maps or lists with a.b.c syntax.
+`
+
+// nyanpasu javascript profile chain template
+const javascript = `// Clash Mimo JavaScript Template
+// Documentation on https://nyanpasu.org/
+
+/** @type {config} */
+export default function (profile) {
+  return profile;
+}
+`
+
+// nyanpasu lua profile chain template
+const luascript = `-- Clash Mimo Lua Script Template
+-- Documentation on https://nyanpasu.org/
+
+return config;
+`
+
+// clash profile template example
+const profile = `# Clash Mimo Profile Template
+# Documentation on https://nyanpasu.org/
+
+proxies:
+
+proxy-groups:
+
+rules:
+`
+
+export const ProfileTemplate = {
+  merge,
+  javascript,
+  luascript,
+  profile,
+} as const

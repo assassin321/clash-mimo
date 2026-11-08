@@ -1,0 +1,157 @@
+{
+  "_version": 1,
+  "tray": {
+    "copy_env": {
+      "cmd": "複製環境變數 (Cmd)",
+      "ps": "複製環境變數 (Pwsh)",
+      "sh": "複製環境變數 (Shell)"
+    },
+    "no_proxies": "無 Proxy",
+    "select_proxy": "選取 Proxy",
+    "restore_auto_selection": "復原自動選擇",
+    "dashboard": "顯示 Clash Mimo",
+    "direct_mode": "直連模式",
+    "global_mode": "全域模式",
+    "more": {
+      "menu": "更多",
+      "restart_app": "重新啟動 Clash Mimo",
+      "restart_core": "重新啟動 Clash 核心"
+    },
+    "open_dir": {
+      "menu": "開啟目錄",
+      "app_config_dir": "設定檔目錄",
+      "app_data_dir": "資料目錄",
+      "core_dir": "核心目錄",
+      "log_dir": "日誌目錄"
+    },
+    "proxy_action": {
+      "enabled": "已啟用",
+      "disabled": "已停用"
+    },
+    "quit": "結束",
+    "rule_mode": "規則模式",
+    "script_mode": "腳本模式",
+    "system_proxy": "系統 Proxy",
+    "tun_mode": "TUN 模式"
+  },
+  "dialog": {
+    "crash_reporter": {
+      "heading": "Clash Mimo 發生問題並已關閉",
+      "description": "請在 GitHub 上提交此報告，協助我們修復問題。",
+      "version": "版本",
+      "system": "系統",
+      "error": "錯誤",
+      "location": "位置",
+      "backtrace": "當機堆疊",
+      "environment": "環境資訊",
+      "copy": "複製報告",
+      "copied": "報告已複製",
+      "copy_section": "複製",
+      "section_copied": "已複製",
+      "copy_failed": "無法複製報告，請手動選取並複製",
+      "close": "關閉",
+      "report_issue": "回報問題",
+      "issue_opened": "問題頁面已開啟。將診斷壓縮檔拖入問題以附加日誌。",
+      "open_failed": "無法開啟 issue 頁面",
+      "manual_heading": "回報問題",
+      "manual_description": "在 GitHub 描述問題，幫助我們修復。",
+      "collecting": "正在收集診斷資訊",
+      "step_host": "主機",
+      "step_webview": "WebView",
+      "step_core": "核心",
+      "step_app_logs": "應用程式日誌",
+      "step_core_logs": "核心日誌",
+      "ready": "診斷資訊已就緒",
+      "failed": "部分診斷資訊無法收集",
+      "interrupted": "診斷已中斷",
+      "show_in_folder": "在資料夾中顯示"
+    },
+    "panic": "請將此問題回報至 Nyanpasu 的 GitHub Issues。",
+    "migrate": "檢測到舊版本設定，是否遷移到新版本？\n警告：此操作會覆蓋掉現有設定。",
+    "custom_app_dir_migrate": "你將要更改 App 目錄至 %{path}。\n需要將現有資料遷移到新目錄嗎？",
+    "warning": {
+      "enable_tun_with_no_permission": "開啟 TUN 模式需要系統管理員權限或服務模式，目前都未啟用，因此 TUN 模式將無法正常工作。"
+    },
+    "info": {
+      "grant_core_permission": "Clash 核心需要系統管理員權限才能使 TUN 模式正常工作，是否授予？\n請注意：此操作需要輸入密碼。"
+    },
+    "startup_failure": {
+      "unresolved_path": "無法解析路徑，請查看下方詳細資訊。",
+      "heading": "啟動失敗",
+      "path": "路徑",
+      "details": "詳細資訊",
+      "open_containing": "開啟所在目錄",
+      "open_backups": "開啟備份目錄",
+      "open_logs": "開啟日誌目錄",
+      "copy": "複製詳細資訊",
+      "copied": "已複製",
+      "copy_failed": "無法複製詳細資訊",
+      "open_failed": "無法開啟目錄",
+      "exit": "結束",
+      "directories": {
+        "description": "應用程式目錄無法使用。",
+        "recovery": "請檢查權限和剩餘磁碟空間。可攜版可移至可寫入的位置。"
+      },
+      "migration_failed": {
+        "description": "設定遷移未能完成。",
+        "recovery": "請修正回報的問題，或從可用備份還原設定。"
+      },
+      "newer_version": {
+        "description": "這些檔案由較新版本寫入。",
+        "recovery": "請安裝較新版本的 Clash Mimo，或還原相容的備份。"
+      },
+      "user_config": {
+        "description": "無法讀取或驗證設定檔。",
+        "recovery": "請修正下方檔案，或從備份目錄還原。"
+      },
+      "core_runtime_directory": {
+        "description": "核心執行目錄無法使用。",
+        "recovery": "請先檢查目錄權限。結束所有 Clash Mimo 程序後，可刪除此目錄並重新啟動。"
+      },
+      "jobs_database": {
+        "description": "工作資料庫無法使用。",
+        "recovery": "此檔案僅儲存工作歷程。可刪除或移走 jobs.redb 後重新啟動。"
+      },
+      "web_view2": {
+        "description": "WebView2 執行階段無法使用。",
+        "recovery": "請重新下載可攜版，或重新安裝 Clash Mimo。",
+        "portable_recovery": "請重新下載可攜式套件。",
+        "installed_recovery": "請重新安裝 Clash Mimo。"
+      },
+      "logging": {
+        "description": "應用程式日誌無法使用。",
+        "recovery": "請檢查日誌位置的權限和剩餘磁碟空間。"
+      },
+      "permission": {
+        "description": "存取所需檔案或目錄遭拒。",
+        "recovery": "請檢查下方路徑的權限，確保目前帳戶可以讀寫。"
+      },
+      "busy": {
+        "description": "所需檔案或目錄正被佔用。",
+        "recovery": "請結束其他 Clash Mimo 程序並解除檔案佔用，然後重新啟動。"
+      },
+      "internal": {
+        "description": "內部錯誤導致應用程式無法啟動。",
+        "recovery": "請複製詳細資訊，並附上版本與日誌回報問題。"
+      }
+    }
+  },
+  "setting": {
+    "connection": {
+      "interrupt": {
+        "proxy": {
+          "label": "當 Proxy 切換時打斷連線"
+        },
+        "profile": {
+          "label": "當設定檔切換時打斷連線"
+        },
+        "mode": {
+          "label": "當模式切換時打斷連線"
+        }
+      }
+    }
+  },
+  "break_when_proxy_change": "當 Proxy 切換時打斷連線",
+  "break_when_profile_change": "當設定檔切換時打斷連線",
+  "break_when_mode_change": "當模式切換時打斷連線"
+}

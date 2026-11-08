@@ -1,0 +1,13 @@
+{
+  "extends": "../../tsconfig.browser.json",
+  "compilerOptions": {
+    "allowJs": true,
+    "paths": {
+      "@/*": ["./src/*"],
+      "@root/*": ["../../*"],
+      "~/*": ["./*"],
+    },
+    "types": ["unplugin-icons/types/react", "vite-plugin-svgr/client"],
+  },
+  "include": ["src", "auto-imports.d.ts"],
+}

@@ -1,0 +1,12 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "types": [
+      "node",
+      "vitest/browser",
+      "unplugin-icons/types/react",
+      "vite-plugin-svgr/client",
+    ],
+  },
+  "include": [".", "../src", "../auto-imports.d.ts"],
+}

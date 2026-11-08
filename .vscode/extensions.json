@@ -1,0 +1,15 @@
+{
+  "recommendations": [
+    "inlang.vs-code-extension",
+    "editorconfig.editorconfig",
+    "vadimcn.vscode-lldb",
+    "denoland.vscode-deno",
+    "esbenp.prettier-vscode",
+    "yoavbls.pretty-ts-errors",
+    "rust-lang.rust-analyzer",
+    "stylelint.vscode-stylelint",
+    "bradlc.vscode-tailwindcss",
+    "oxc.oxc-vscode",
+    "tombi-toml.tombi"
+  ]
+}

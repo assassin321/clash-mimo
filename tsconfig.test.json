@@ -1,0 +1,24 @@
+{
+  "extends": "./tsconfig.browser.json",
+  "compilerOptions": {
+    "allowImportingTsExtensions": true,
+    "allowJs": true,
+    "types": [
+      "node",
+      "vite/client",
+      "vitest/browser",
+      "vite-plugin-svgr/client"
+    ],
+    "paths": {
+      "@/*": ["./frontend/nyanpasu/src/*"],
+      "@root/*": ["./*"],
+      "~icons/*": ["./frontend/nyanpasu/tests/icon-stub.tsx"]
+    }
+  },
+  "include": [
+    "vitest.config.ts",
+    "frontend/nyanpasu/src/services/types.d.ts",
+    "frontend/*/tests/**/*.ts",
+    "frontend/*/tests/**/*.tsx"
+  ]
+}

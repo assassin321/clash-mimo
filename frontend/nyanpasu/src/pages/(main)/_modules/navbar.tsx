@@ -1,0 +1,273 @@
+import Apps from '~icons/material-symbols/apps'
+import DashboardRounded from '~icons/material-symbols/dashboard-rounded'
+import DesignServicesRounded from '~icons/material-symbols/design-services-rounded'
+import GridViewOutlineRounded from '~icons/material-symbols/grid-view-outline-rounded'
+import MenuRounded from '~icons/material-symbols/menu-rounded'
+import Public from '~icons/material-symbols/public'
+import SchemaRounded from '~icons/material-symbols/schema-rounded'
+import SettingsEthernetRounded from '~icons/material-symbols/settings-ethernet-rounded'
+import SettingsRounded from '~icons/material-symbols/settings-rounded'
+import TerminalRounded from '~icons/material-symbols/terminal-rounded'
+import { ComponentProps, ReactElement, useMemo } from 'react'
+import AnimatedTabs, { AnimatedTabsItem } from '@nyanpasu/ui/animated-tabs'
+import { Button } from '@nyanpasu/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@nyanpasu/ui/dropdown-menu'
+import { m } from '@/paraglide/messages'
+import type { FileRoutesByTo } from '@/route-tree.gen'
+import { useClashProxies } from '@nyanpasu/query'
+import { cn } from '@nyanpasu/utils'
+import {
+  Link,
+  useMatchRoute,
+  type LinkComponentProps,
+  type RegisteredRouter,
+} from '@tanstack/react-router'
+
+function NavbarButton<
+  const TFrom extends string = string,
+  const TTo extends string | undefined = undefined,
+  const TMaskFrom extends string = TFrom,
+  const TMaskTo extends string = '',
+>({
+  section,
+  ...props
+}: LinkComponentProps<'a', RegisteredRouter, TFrom, TTo, TMaskFrom, TMaskTo> & {
+  // Keeps the button active on every subpage of this route, not only the
+  // subpage the link opens.
+  section?: keyof FileRoutesByTo
+}) {
+  const matchRoute = useMatchRoute()
+
+  const linkProps = props as LinkComponentProps<
+    'a',
+    RegisteredRouter,
+    TFrom,
+    TTo,
+    TMaskFrom,
+    TMaskTo
+  >
+
+  const isActive = !!matchRoute(
+    section ? { to: section, fuzzy: true } : { ...linkProps, fuzzy: true },
+  )
+
+  return (
+    <AnimatedTabsItem
+      className={cn('md:min-w-max md:flex-none [&_svg]:size-5')}
+      data-active={String(isActive)}
+      data-slot="animated-tabs-item"
+      isActive={isActive}
+      asChild
+    >
+      <Link {...linkProps} />
+    </AnimatedTabsItem>
+  )
+}
+
+const NavbarLabel = ({ className, ...props }: ComponentProps<'span'>) => {
+  return (
+    <span
+      className={cn('text-sm font-medium text-nowrap', className)}
+      data-slot="navbar-label"
+      {...props}
+    />
+  )
+}
+
+const MoblieNavbarContainer = ({
+  className,
+  ...props
+}: ComponentProps<'div'>) => {
+  return (
+    <div
+      className={cn(
+        'flex flex-col items-center gap-0.5',
+        'min-w-0 flex-1',
+        // '**:data-[slot=animated-tabs-item]:py-1!',
+        className,
+      )}
+      data-slot="mobile-navbar-container"
+      {...props}
+    />
+  )
+}
+
+// The proxies query changes with every delay result, so it is read here
+// rather than in the navbar: only this button renders on such a change, and
+// the memoized element skips even that unless the first group changes.
+// The explicit return type keeps the route tree, which imports this module,
+// from depending on the inferred type of the memoized element.
+const ProxiesNavbarButton = (): ReactElement => {
+  const {
+    proxies: { data: proxies },
+  } = useClashProxies()
+
+  const fristGroup = proxies?.groups[0]?.name
+
+  return useMemo(
+    () =>
+      fristGroup ? (
+        <NavbarButton
+          to="/main/proxies/group/$name"
+          params={{ name: fristGroup }}
+          section="/main/proxies"
+        >
+          <Public />
+
+          <NavbarLabel>{m.navbar_label_proxies()}</NavbarLabel>
+        </NavbarButton>
+      ) : (
+        <NavbarButton to="/main/proxies">
+          <Public />
+
+          <NavbarLabel>{m.navbar_label_proxies()}</NavbarLabel>
+        </NavbarButton>
+      ),
+    [fristGroup],
+  )
+}
+
+export const DefaultNavbar = () => {
+  return (
+    <AnimatedTabs
+      className={cn(
+        'bg-transparent!',
+        '**:data-[slot=animated-tabs-indicator]:bg-inverse-primary',
+        '**:dark:data-[slot=animated-tabs-indicator]:bg-primary-container',
+      )}
+      data-slot="app-navbar"
+      variant="pill"
+      size="sm"
+    >
+      <NavbarButton to="/main/dashboard">
+        <DashboardRounded />
+
+        <NavbarLabel>{m.navbar_label_dashboard()}</NavbarLabel>
+      </NavbarButton>
+
+      <ProxiesNavbarButton />
+
+      <NavbarButton
+        to="/main/profiles/$type"
+        params={{
+          type: 'profile',
+        }}
+        section="/main/profiles"
+      >
+        <GridViewOutlineRounded />
+
+        <NavbarLabel>{m.navbar_label_profiles()}</NavbarLabel>
+      </NavbarButton>
+
+      <NavbarButton to="/main/connections">
+        <SettingsEthernetRounded />
+
+        <NavbarLabel>{m.navbar_label_connections()}</NavbarLabel>
+      </NavbarButton>
+
+      <NavbarButton to="/main/topology">
+        <SchemaRounded />
+        <NavbarLabel>{m.topology_title()}</NavbarLabel>
+      </NavbarButton>
+
+      <NavbarButton to="/main/rules">
+        <DesignServicesRounded />
+
+        <NavbarLabel>{m.navbar_label_rules()}</NavbarLabel>
+      </NavbarButton>
+
+      <NavbarButton to="/main/logs">
+        <TerminalRounded />
+
+        <NavbarLabel>{m.navbar_label_logs()}</NavbarLabel>
+      </NavbarButton>
+
+      <NavbarButton to="/main/settings/system/proxy" section="/main/settings">
+        <SettingsRounded />
+
+        <NavbarLabel>{m.navbar_label_settings()}</NavbarLabel>
+      </NavbarButton>
+
+      <NavbarButton to="/main/providers">
+        <Apps />
+
+        <NavbarLabel>{m.navbar_label_providers()}</NavbarLabel>
+      </NavbarButton>
+    </AnimatedTabs>
+  )
+}
+
+export const MobileNavbar = () => {
+  return (
+    <AnimatedTabs
+      className={cn(
+        'h-full w-full bg-transparent! py-2',
+        '**:data-[slot=animated-tabs-indicator]:bg-inverse-primary',
+        '**:dark:data-[slot=animated-tabs-indicator]:bg-on-primary',
+      )}
+      variant="pill"
+      size="sm"
+    >
+      <MoblieNavbarContainer>
+        <NavbarButton to="/main/dashboard">
+          <DashboardRounded />
+        </NavbarButton>
+        {m.navbar_label_dashboard()}
+      </MoblieNavbarContainer>
+
+      <MoblieNavbarContainer>
+        <NavbarButton to="/main/proxies">
+          <Public />
+        </NavbarButton>
+        {m.navbar_label_proxies()}
+      </MoblieNavbarContainer>
+
+      <MoblieNavbarContainer>
+        <NavbarButton to="/main/profiles/$type" params={{ type: 'profile' }}>
+          <GridViewOutlineRounded />
+        </NavbarButton>
+        {m.navbar_label_profiles()}
+      </MoblieNavbarContainer>
+
+      <MoblieNavbarContainer>
+        <NavbarButton to="/main/connections">
+          <SettingsEthernetRounded />
+        </NavbarButton>
+        {m.navbar_label_connections()}
+      </MoblieNavbarContainer>
+
+      <MoblieNavbarContainer>
+        <NavbarButton to="/main/rules">
+          <DesignServicesRounded />
+        </NavbarButton>
+        {m.navbar_label_rules()}
+      </MoblieNavbarContainer>
+
+      <MoblieNavbarContainer>
+        <NavbarButton to="/main/logs">
+          <TerminalRounded />
+        </NavbarButton>
+        {m.navbar_label_logs()}
+      </MoblieNavbarContainer>
+
+      <MoblieNavbarContainer>
+        <NavbarButton to="/main/providers">
+          <Apps />
+        </NavbarButton>
+        {m.navbar_label_providers()}
+      </MoblieNavbarContainer>
+
+      <MoblieNavbarContainer>
+        <NavbarButton to="/main/settings/system/proxy" section="/main/settings">
+          <SettingsRounded />
+        </NavbarButton>
+        {m.navbar_label_settings()}
+      </MoblieNavbarContainer>
+    </AnimatedTabs>
+  )
+}

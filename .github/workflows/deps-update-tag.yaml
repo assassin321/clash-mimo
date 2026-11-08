@@ -1,0 +1,65 @@
+name: '[Reusable] Update Nightly Tag and Release'
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release Tag'
+        required: true
+        type: string
+
+  workflow_call:
+    inputs:
+      tag:
+        description: 'Release Tag'
+        required: true
+        type: string
+
+jobs:
+  update_tag:
+    name: Update tag
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set Env
+        run: |
+          echo "BUILDTIME=$(TZ=Asia/Shanghai date)" >> $GITHUB_ENV
+          echo "CURRENT_GIT_SHA=$(git rev-parse HEAD)" >> $GITHUB_ENV
+        shell: bash
+
+      - name: Update Tag
+        uses: greenhat616/update-tag@v1
+        with:
+          tag_name: ${{ inputs.tag }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create release body
+        env:
+          TELEGRAM_ARCHIVE_CHANNEL: ${{ vars.TELEGRAM_ARCHIVE_CHANNEL }}
+          TELEGRAM_RELEASE_CHANNEL: ${{ vars.TELEGRAM_RELEASE_CHANNEL }}
+        run: |
+          archive_channel="${TELEGRAM_ARCHIVE_CHANNEL#@}"
+          release_channel="${TELEGRAM_RELEASE_CHANNEL#@}"
+          cat > release.txt << EOF
+          ## Clash Mimo Nightly Build
+          Release created at  ${{ env.BUILDTIME }}.
+          Daily build of **Clash Mimo** on *main* branch.
+          You could download previous Nightly Builds from [here](https://t.me/${archive_channel}).
+          ***[See the development log here](https://t.me/s/${release_channel}/)***
+          EOF
+
+      - name: Update Release
+        uses: softprops/action-gh-release@v3
+        with:
+          name: Clash Mimo Dev
+          tag_name: ${{ inputs.tag }}
+          body_path: release.txt
+          prerelease: true
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

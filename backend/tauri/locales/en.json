@@ -1,0 +1,157 @@
+{
+  "_version": 1,
+  "tray": {
+    "copy_env": {
+      "cmd": "Copy Env (Cmd)",
+      "ps": "Copy Env (Pwsh)",
+      "sh": "Copy Env (Shell)"
+    },
+    "no_proxies": "No Proxies",
+    "select_proxy": "Select Proxy",
+    "restore_auto_selection": "Restore Automatic Selection",
+    "dashboard": "Show Clash Mimo",
+    "direct_mode": "Direct Mode",
+    "global_mode": "Global Mode",
+    "more": {
+      "menu": "More",
+      "restart_app": "Restart Clash Mimo",
+      "restart_core": "Restart Clash Core"
+    },
+    "open_dir": {
+      "menu": "Open Dir",
+      "app_config_dir": "Config Dir",
+      "app_data_dir": "Data Dir",
+      "core_dir": "Core Dir",
+      "log_dir": "Log Dir"
+    },
+    "proxy_action": {
+      "enabled": "Enabled",
+      "disabled": "Disabled"
+    },
+    "quit": "Quit",
+    "rule_mode": "Rule Mode",
+    "script_mode": "Script Mode",
+    "system_proxy": "System Proxy",
+    "tun_mode": "TUN Mode"
+  },
+  "dialog": {
+    "crash_reporter": {
+      "heading": "Clash Mimo ran into a problem and closed",
+      "description": "Send this report on GitHub to help us fix it.",
+      "version": "Version",
+      "system": "System",
+      "error": "Error",
+      "location": "Location",
+      "backtrace": "Backtrace",
+      "environment": "Environment",
+      "copy": "Copy report",
+      "copied": "Report copied",
+      "copy_section": "Copy",
+      "section_copied": "Copied",
+      "copy_failed": "Could not copy the report; select it and copy it by hand",
+      "close": "Close",
+      "report_issue": "Report issue",
+      "issue_opened": "Issue page opened. Drag the diagnostics archive into the issue to attach the logs.",
+      "open_failed": "Could not open the issue page",
+      "manual_heading": "Report a problem",
+      "manual_description": "Describe the problem on GitHub to help us fix it.",
+      "collecting": "Collecting diagnostics",
+      "step_host": "Host",
+      "step_webview": "WebView",
+      "step_core": "Core",
+      "step_app_logs": "App logs",
+      "step_core_logs": "Core logs",
+      "ready": "Diagnostics ready",
+      "failed": "Some diagnostics could not be collected",
+      "interrupted": "Diagnostics interrupted",
+      "show_in_folder": "Show in folder"
+    },
+    "panic": "Please report this issue to Github issue tracker.",
+    "migrate": "Old version config file detected. Migrate to new version or not?\nWARNING: This will override your current config if exists",
+    "custom_app_dir_migrate": "You will set custom app dir to %{path}\nShall we move the current app dir to the new one?",
+    "warning": {
+      "enable_tun_with_no_permission": "TUN mode requires admin permission or service mode, neither is enabled, TUN mode will not work properly."
+    },
+    "info": {
+      "grant_core_permission": "Clash core needs admin permission to make TUN mode work properly, grant it?\nPlease note that this operation requires password input."
+    },
+    "startup_failure": {
+      "unresolved_path": "Path could not be resolved; see details below.",
+      "heading": "Startup failed",
+      "path": "Path",
+      "details": "Details",
+      "open_containing": "Open containing folder",
+      "open_backups": "Open backups folder",
+      "open_logs": "Open logs folder",
+      "copy": "Copy details",
+      "copied": "Copied",
+      "copy_failed": "Could not copy details",
+      "open_failed": "Could not open folder",
+      "exit": "Exit",
+      "directories": {
+        "description": "An application directory is unavailable.",
+        "recovery": "Check permissions and free disk space. Move a portable installation to a writable location."
+      },
+      "migration_failed": {
+        "description": "The configuration migration could not finish.",
+        "recovery": "Correct the reported problem, or restore your configuration from an available backup."
+      },
+      "newer_version": {
+        "description": "These files were written by a newer version.",
+        "recovery": "Install a newer version of Clash Mimo, or restore a compatible backup."
+      },
+      "user_config": {
+        "description": "A configuration file could not be read or validated.",
+        "recovery": "Correct the file shown below, or restore it from the backups folder."
+      },
+      "core_runtime_directory": {
+        "description": "The core runtime directory is unavailable.",
+        "recovery": "Exit all Clash Mimo processes before removing this directory, then restart. Check its permissions first."
+      },
+      "jobs_database": {
+        "description": "The jobs database is unavailable.",
+        "recovery": "This file stores only task history. You can delete or move jobs.redb, then restart."
+      },
+      "web_view2": {
+        "description": "The WebView2 runtime is unavailable.",
+        "recovery": "Download the portable package again, or reinstall Clash Mimo.",
+        "portable_recovery": "Download the portable package again.",
+        "installed_recovery": "Reinstall Clash Mimo."
+      },
+      "logging": {
+        "description": "Application logging is unavailable.",
+        "recovery": "Check permissions and free disk space at the log location."
+      },
+      "permission": {
+        "description": "Access to a required file or directory was denied.",
+        "recovery": "Check permissions for the path below and ensure your account can read and write it."
+      },
+      "busy": {
+        "description": "A required file or directory is busy.",
+        "recovery": "Exit other Clash Mimo processes and release the file lock, then restart."
+      },
+      "internal": {
+        "description": "An internal error prevented startup.",
+        "recovery": "Copy the details and submit an issue with the version and logs."
+      }
+    }
+  },
+  "setting": {
+    "connection": {
+      "interrupt": {
+        "proxy": {
+          "label": "Interrupt connections when proxy changes"
+        },
+        "profile": {
+          "label": "Interrupt connections when profile changes"
+        },
+        "mode": {
+          "label": "Interrupt connections when mode changes"
+        }
+      }
+    }
+  },
+  "break_when_proxy_change": "Interrupt connections when proxy changes",
+  "break_when_profile_change": "Interrupt connections when profile changes",
+  "break_when_mode_change": "Interrupt connections when mode changes"
+}

@@ -1,0 +1,390 @@
+import type { ComponentType, PropsWithChildren } from 'react'
+import { beforeEach, expect, test, vi } from 'vitest'
+import { render } from 'vitest-browser-react'
+import type {
+  CoreLogQuery,
+  CoreLogRow,
+  CoreLogStatus,
+} from '@nyanpasu/rpc/types'
+import { Route } from '../src/pages/(main)/main/logs'
+import { m } from '../src/paraglide/messages'
+
+const mocked = vi.hoisted(() => ({
+  queryCoreLogs: vi.fn(),
+  getCoreLogStatus: vi.fn(),
+  navigate: vi.fn(),
+  source: 'core' as 'core' | 'app' | 'service',
+  listLogFiles: vi.fn(),
+  openLogSession: vi.fn(),
+  closeLogSession: vi.fn(),
+  queryLogs: vi.fn(),
+}))
+
+vi.mock('@nyanpasu/query/provider/rpc-provider', async (importOriginal) => ({
+  ...(await importOriginal<
+    typeof import('@nyanpasu/query/provider/rpc-provider')
+  >()),
+  useRpc: () => rpc,
+  useQueryApi: () => rpc,
+}))
+
+vi.mock('../src/pages/(main)/main/logs/route', () => ({
+  Route: {
+    useSearch: () => ({ source: mocked.source }),
+    useNavigate: () => mocked.navigate,
+  },
+  LogLevelsLayout: ({ children }: PropsWithChildren) => children,
+}))
+
+vi.mock('../src/components/providers/context-menu-provider', () => ({
+  RegisterContextMenu: ({ children }: PropsWithChildren) => children,
+  RegisterContextMenuTrigger: ({ children }: PropsWithChildren) => children,
+  RegisterContextMenuContent: () => null,
+}))
+
+const rpc = {
+  ...mocked,
+  events: { coreLogsChanged: { listen: async () => () => {} } },
+  listenResync: () => () => {},
+}
+const CoreLogsPage = Route.options.component as ComponentType
+const ok = <T,>(data: T) => ({ status: 'ok' as const, data })
+const cursor = (sequence: number) => ({ generation: 'session', sequence })
+const status: CoreLogStatus = {
+  generation: 'session',
+  version: 220,
+  first: cursor(1),
+  head: cursor(220),
+  bytes: 22000,
+  discarded: 0,
+  error: null,
+}
+const rows = (start: number, count: number): CoreLogRow[] =>
+  Array.from({ length: count }, (_, index) => ({
+    id: cursor(start + index),
+    truncated: false,
+    record: {
+      source: {
+        capture: 'capture',
+        instance_id: 'instance',
+        core_kind: 'Mihomo',
+      },
+      received_at: start + index,
+      time: null,
+      type: 'info',
+      payload: `record ${start + index}`,
+    },
+  }))
+
+beforeEach(() => {
+  vi.clearAllMocks()
+  mocked.source = 'core'
+  mocked.getCoreLogStatus.mockResolvedValue(ok(status))
+  mocked.queryCoreLogs.mockImplementation(async (query: CoreLogQuery) =>
+    ok({
+      rows: query.direction === 'latest' ? rows(201, 20) : [],
+      cursor: cursor(201),
+      more: query.direction === 'latest',
+      status,
+    }),
+  )
+})
+
+test.for(['app', 'service'] as const)(
+  '%s footer selects current and archived files through the dropdown menu',
+  async (source, { onTestFinished }) => {
+    mocked.source = source
+    mocked.listLogFiles.mockResolvedValue(
+      ok([{ id: 'archive.log', name: 'archive.log', bytes: '100' }]),
+    )
+    mocked.openLogSession.mockResolvedValue(
+      ok({ id: 'session', lease_ms: 60000 }),
+    )
+    mocked.closeLogSession.mockResolvedValue(ok(null))
+    mocked.queryLogs.mockResolvedValue(
+      ok({
+        rows: [],
+        cursor: null,
+        head: null,
+        start: '0',
+        file: 'archive.log',
+        building: false,
+        more: false,
+        partial: false,
+        malformed: '0',
+        truncated: '0',
+        indexed_bytes: '100',
+        file_bytes: '100',
+      }),
+    )
+    const view = await render(<CoreLogsPage />)
+    onTestFinished(() => view.unmount())
+    await expect.poll(() => mocked.openLogSession.mock.calls.length).toBe(1)
+    const select = view.getByRole('button', { name: m.logs_file_label() })
+    expect(select.element().textContent).toContain(m.logs_current_file())
+    await select.click()
+    await view.getByRole('menuitemradio', { name: 'archive.log' }).click()
+    await expect
+      .poll(() => mocked.openLogSession.mock.lastCall)
+      .toEqual([
+        source,
+        { request_id: expect.any(String), file: 'archive.log' },
+      ])
+    await expect.element(select).toHaveTextContent('archive.log')
+    await select.click()
+    await view
+      .getByRole('menuitemradio', { name: m.logs_current_file() })
+      .click()
+    await expect
+      .poll(() => mocked.openLogSession.mock.lastCall)
+      .toEqual([source, { request_id: expect.any(String), file: null }])
+  },
+)
+
+async function mountPage() {
+  const view = await render(
+    <>
+      <style>{`
+        [data-slot="scroll-area"] { height: 330px; overflow: hidden; }
+        [data-slot="scroll-area-viewport"] { height: 330px; }
+        [data-slot="logs-virtual-list"] { position: relative; }
+        [data-slot="logs-virtual-item"] { position: absolute; top: 0; width: 100%; height: 110px; }
+      `}</style>
+      <CoreLogsPage />
+    </>,
+  )
+  const viewport = view.container.querySelector<HTMLDivElement>(
+    '[data-slot="scroll-area-viewport"]',
+  )!
+  return { view, viewport }
+}
+
+test('zero discarded logs do not render a stray header or text node', async ({
+  onTestFinished,
+}) => {
+  const { view } = await mountPage()
+  onTestFinished(() => view.unmount())
+  await expect
+    .poll(() => view.container.querySelector('[data-slot="logs-virtual-item"]'))
+    .not.toBeNull()
+  const panel = view.container.querySelector('[data-slot="core-logs"]')!
+  expect(panel.querySelector('[role="status"]')).toBeNull()
+  expect(
+    [...panel.childNodes]
+      .filter((node) => node.nodeType === Node.TEXT_NODE)
+      .map((node) => node.textContent)
+      .join(''),
+  ).toBe('')
+})
+
+function pendingLatestPage() {
+  let finish!: () => void
+  mocked.queryCoreLogs.mockImplementation(
+    (query: CoreLogQuery) =>
+      new Promise((resolve) => {
+        finish = () =>
+          resolve(
+            ok({
+              rows: query.direction === 'latest' ? rows(201, 20) : [],
+              cursor: cursor(201),
+              more: false,
+              status,
+            }),
+          )
+      }),
+  )
+  return () => finish()
+}
+
+test('a fast first page shows neither the loading status nor the empty state', async ({
+  onTestFinished,
+}) => {
+  const finish = pendingLatestPage()
+  const flashed = new Set<string>()
+  const observer = new MutationObserver(() => {
+    const text = document.body.textContent ?? ''
+    for (const message of [m.logs_loading(), m.logs_empty_message()])
+      if (text.includes(message)) flashed.add(message)
+  })
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true,
+    characterData: true,
+  })
+  onTestFinished(() => observer.disconnect())
+  const { view } = await mountPage()
+  onTestFinished(() => view.unmount())
+  await expect.poll(() => mocked.queryCoreLogs.mock.calls.length).toBe(1)
+  finish()
+  await expect
+    .element(view.getByText('record 220', { exact: true }))
+    .toBeInTheDocument()
+  expect([...flashed]).toEqual([])
+})
+
+test('a slow first page announces that logs are loading', async ({
+  onTestFinished,
+}) => {
+  vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] })
+  onTestFinished(() => {
+    vi.useRealTimers()
+  })
+  const finish = pendingLatestPage()
+  const { view } = await mountPage()
+  onTestFinished(() => view.unmount())
+  await expect.poll(() => mocked.queryCoreLogs.mock.calls.length).toBe(1)
+  vi.advanceTimersByTime(1000)
+  await expect.element(view.getByText(m.logs_loading())).toBeInTheDocument()
+  finish()
+  await expect
+    .element(view.getByText('record 220', { exact: true }))
+    .toBeInTheDocument()
+  expect(view.container.textContent).not.toContain(m.logs_loading())
+})
+
+test('rows enter when the data adds them, not when scrolling mounts them', async ({
+  onTestFinished,
+}) => {
+  vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] })
+  onTestFinished(() => {
+    vi.useRealTimers()
+  })
+  const { view, viewport } = await mountPage()
+  onTestFinished(() => view.unmount())
+  const item = (text: string) =>
+    view
+      .getByText(text, { exact: true })
+      .element()
+      .closest('[data-slot="logs-virtual-item"]')!
+  await expect
+    .element(view.getByText('record 220', { exact: true }))
+    .toBeInTheDocument()
+  expect(item('record 220').className).toContain('animate-log-row-enter')
+  expect(view.container.textContent).not.toContain('record 201')
+  vi.advanceTimersByTime(1000)
+  viewport.scrollTop = 0
+  await expect
+    .element(view.getByText('record 201', { exact: true }))
+    .toBeInTheDocument()
+  expect(item('record 201').className).not.toContain('animate-log-row-enter')
+})
+
+test('scrolling to the top loads older records and preserves the visible row', async ({
+  onTestFinished,
+}) => {
+  let finishOlder!: () => void
+  mocked.queryCoreLogs.mockImplementation((query: CoreLogQuery) => {
+    if (query.direction === 'before') {
+      return new Promise((resolve) => {
+        finishOlder = () =>
+          resolve(
+            ok({
+              rows: rows(181, 20),
+              cursor: cursor(181),
+              more: false,
+              status,
+            }),
+          )
+      })
+    }
+    return Promise.resolve(
+      ok({
+        rows: query.direction === 'latest' ? rows(201, 20) : [],
+        cursor: cursor(201),
+        more: query.direction === 'latest',
+        status,
+      }),
+    )
+  })
+  const { view, viewport } = await mountPage()
+  onTestFinished(() => view.unmount())
+  await expect
+    .poll(() => viewport.scrollTop, { timeout: 5_000 })
+    .toBeGreaterThan(1000)
+  await expect
+    .poll(() => viewport.parentElement?.getAttribute('data-scroll-direction'))
+    .toBe('down')
+  expect(
+    mocked.queryCoreLogs.mock.calls.some(
+      ([query]) => query.direction === 'before',
+    ),
+  ).toBe(false)
+  viewport.scrollTop = 0
+  await expect
+    .poll(
+      () =>
+        mocked.queryCoreLogs.mock.calls.filter(
+          ([query]) => query.direction === 'before',
+        ).length,
+    )
+    .toBe(1)
+  const rowTop = () =>
+    view
+      .getByText('record 201', { exact: true })
+      .element()
+      .getBoundingClientRect().top - viewport.getBoundingClientRect().top
+  const top = rowTop()
+  finishOlder()
+  await expect
+    .poll(() => viewport.scrollTop, { timeout: 5_000 })
+    .toBeGreaterThan(1000)
+  await expect
+    .poll(() => Math.abs(rowTop() - top), { timeout: 5_000 })
+    .toBeLessThan(2)
+  expect(view.container.querySelector('button')?.textContent).not.toBe(
+    m.logs_load_older(),
+  )
+  viewport.scrollTop = 0
+  await expect
+    .element(view.getByText('record 181', { exact: true }))
+    .toBeVisible()
+  expect(
+    mocked.queryCoreLogs.mock.calls.filter(
+      ([query]) => query.direction === 'before',
+    ),
+  ).toHaveLength(1)
+  const scrollTo = vi.spyOn(viewport, 'scrollTo')
+  onTestFinished(() => scrollTo.mockRestore())
+  await view.getByRole('button', { name: m.logs_follow_latest() }).click()
+  await expect
+    .poll(() =>
+      scrollTo.mock.calls.some((args) => {
+        const options: unknown = args[0]
+        return (
+          typeof options === 'object' &&
+          options !== null &&
+          'behavior' in options &&
+          options.behavior === 'smooth'
+        )
+      }),
+    )
+    .toBe(true)
+  await expect
+    .poll(() => viewport.scrollTop, { timeout: 5_000 })
+    .toBeGreaterThan(1000)
+})
+
+test('empty filtered pages continue loading until history fills the viewport or ends', async ({
+  onTestFinished,
+}) => {
+  mocked.queryCoreLogs.mockImplementation(async (query: CoreLogQuery) => {
+    const lastPage =
+      query.direction === 'before' && query.cursor?.sequence === 180
+    return ok({
+      rows: lastPage ? rows(160, 2) : [],
+      cursor: cursor(query.direction === 'latest' ? 200 : 180),
+      more: !lastPage,
+      status,
+    })
+  })
+  const { view } = await mountPage()
+  onTestFinished(() => view.unmount())
+  await expect
+    .element(view.getByText('record 160', { exact: true }))
+    .toBeVisible()
+  expect(
+    mocked.queryCoreLogs.mock.calls
+      .filter(([query]) => query.direction === 'before')
+      .map(([query]) => query.cursor.sequence),
+  ).toEqual([200, 180])
+})

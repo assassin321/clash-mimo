@@ -1,0 +1,120 @@
+import { m } from '@/paraglide/messages'
+import { mutations, queries } from '@/services/rpc'
+import { useLockFn } from '@nyanpasu/hooks'
+import { invokeMutation, unwrapQueryOptions } from '@nyanpasu/query'
+import {
+  Button,
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  Modal,
+  ModalClose,
+  ModalContent,
+  ModalTitle,
+  ModalTrigger,
+} from '@nyanpasu/ui'
+import { useQuery } from '@tanstack/react-query'
+import {
+  SettingsCard,
+  SettingsCardAnimatedItem,
+  SettingsCardContent,
+  SettingsCardFooter,
+  SettingsCardHeader,
+} from '../../../_modules/settings-card'
+
+export default function KVStorage() {
+  const storageQuery = queries.getAllStorageItems()
+  const clearStorage = mutations.clearStorage
+  const removeStorageItem = mutations.removeStorageItem
+  const query = useQuery(
+    unwrapQueryOptions(storageQuery, storageQuery.queryFn!),
+  )
+
+  const handleClearAllTask = useLockFn(async () => {
+    await invokeMutation(clearStorage, [])
+    await query.refetch()
+  })
+
+  const handleRemoveItem = useLockFn(async (key: string) => {
+    await invokeMutation(removeStorageItem, [key])
+    await query.refetch()
+  })
+
+  return (
+    <SettingsCard asChild>
+      <SettingsCardAnimatedItem>
+        <SettingsCardHeader>KV Storage</SettingsCardHeader>
+
+        <SettingsCardContent>
+          <div className="flex items-center gap-1 select-text">
+            <span className="font-medium">Total Items:</span>
+
+            <span>{query.isLoading ? 'Loading...' : query.data?.length}</span>
+          </div>
+
+          {query.data &&
+            query.data.map((storage) => {
+              const tryFmt = () => {
+                try {
+                  const parsed = JSON.parse(storage.value)
+
+                  return JSON.stringify(
+                    typeof parsed === 'string' ? JSON.parse(parsed) : parsed,
+                    null,
+                    2,
+                  )
+                } catch {
+                  return storage.value
+                }
+              }
+
+              return (
+                <div key={storage.key} className="flex items-center gap-2">
+                  <div className="flex-1">Key: {storage.key}</div>
+
+                  <Button
+                    variant="stroked"
+                    className="h-8 min-w-0 px-3"
+                    onClick={() => handleRemoveItem(storage.key)}
+                  >
+                    Delete
+                  </Button>
+
+                  <Modal>
+                    <ModalTrigger asChild>
+                      <Button variant="stroked" className="h-8 min-w-0 px-3">
+                        Detail
+                      </Button>
+                    </ModalTrigger>
+
+                    <ModalContent>
+                      <Card className="min-w-96">
+                        <CardHeader>
+                          <ModalTitle>Storage Detail</ModalTitle>
+                        </CardHeader>
+
+                        <CardContent>
+                          <pre className="max-h-[70vh] max-w-[80vw] overflow-auto font-mono text-wrap select-text">
+                            {tryFmt()}
+                          </pre>
+                        </CardContent>
+
+                        <CardFooter className="gap-2">
+                          <ModalClose>{m.common_close()}</ModalClose>
+                        </CardFooter>
+                      </Card>
+                    </ModalContent>
+                  </Modal>
+                </div>
+              )
+            })}
+        </SettingsCardContent>
+
+        <SettingsCardFooter>
+          <Button onClick={handleClearAllTask}>Clear All Web Storage</Button>
+        </SettingsCardFooter>
+      </SettingsCardAnimatedItem>
+    </SettingsCard>
+  )
+}

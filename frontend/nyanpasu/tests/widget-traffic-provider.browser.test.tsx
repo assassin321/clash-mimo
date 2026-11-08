@@ -1,0 +1,456 @@
+import { useState } from 'react'
+import '@/assets/styles/tailwind.css'
+import '@nyanpasu/theme/styles/theme.css'
+import { expect, test, vi } from 'vitest'
+import { render } from 'vitest-browser-react'
+import { page } from 'vitest/browser'
+import { DndGridProvider } from '@nyanpasu/ui/dnd-grid'
+import { TooltipProvider } from '@nyanpasu/ui/tooltip'
+import { RENDER_MAP, type DashboardItem } from '@/components/widgets/consts'
+import { DashboardProvider } from '@/components/widgets/provider'
+import { WidgetId } from '@/components/widgets/widget-config'
+import { DashboardTrafficProvider } from '@/components/widgets/widget-traffic-provider'
+import { m } from '@/paraglide/messages'
+import type { routeTree } from '@/route-tree.gen'
+import { DndContext } from '@dnd-kit/core'
+import { createRpcClient, type RpcEventTransport } from '@nyanpasu/rpc'
+import type { ReportRequest, TrafficReport, Usage } from '@nyanpasu/rpc/types'
+import { QueryClient } from '@tanstack/react-query'
+import {
+  createMemoryHistory,
+  createRootRoute,
+  createRoute,
+  createRouter,
+  Outlet,
+  RouterProvider,
+} from '@tanstack/react-router'
+import { TestQueryProvider } from './query-provider'
+
+declare module '@tanstack/react-router' {
+  interface Register {
+    router: ReturnType<typeof createRouter<typeof routeTree>>
+  }
+}
+
+const reports = vi.hoisted(() => ({
+  requests: [] as ReportRequest[],
+  metadataReads: [] as string[],
+  coreStopped: true,
+}))
+
+function usage(upload: number, download: number): Usage {
+  return { bytes: { upload, download }, connections: 0 }
+}
+
+function reportFor(request: ReportRequest): TrafficReport {
+  const totalBytes = request.query.range === 'last7_days' ? 7 * 1024 : 1024
+  const value = usage(totalBytes / 2, totalBytes / 2)
+  return {
+    total: value,
+    current_rate: null,
+    topology: null,
+    rankings: request.rankings.map((dimension) => ({
+      dimension,
+      distinct: 1,
+      groups: [
+        {
+          key: dimension === 'origin' ? '/apps/example' : 'example',
+          usage: value,
+          current_rate: null,
+        },
+      ],
+      other: usage(0, 0),
+    })),
+  }
+}
+
+function createRpc(storage: string, retention: string | null = '7d') {
+  const invoke = async <T,>(
+    method: string,
+    params?: Record<string, unknown>,
+  ) => {
+    if (method === 'get_storage_item') {
+      return {
+        value: params?.key === 'dashboard-widget-configs' ? storage : null,
+        revision: 0,
+      } as T
+    }
+    if (method === 'get_app_config') {
+      reports.metadataReads.push(method)
+      if (retention === null) throw new Error('settings unavailable')
+      return { traffic_retention: retention } as T
+    }
+    if (method === 'get_profiles') {
+      reports.metadataReads.push(method)
+      return { items: [], valid: [], current: null } as T
+    }
+    if (method === 'query_traffic_report') {
+      const request = (params as { request: ReportRequest }).request
+      reports.requests.push(request)
+      // Historical reports remain available even when the runtime core is stopped.
+      expect(reports.coreStopped).toBe(true)
+      return reportFor(request) as T
+    }
+    throw new Error(`Unexpected RPC command: ${method}`)
+  }
+
+  const events: RpcEventTransport = {
+    listen: async () => () => {},
+    once: async () => () => {},
+    emit: async () => {},
+    listenResync: () => () => {},
+    dispose: () => {},
+  }
+
+  return createRpcClient({ commands: { invoke }, events })
+}
+
+const items: DashboardItem[] = [
+  {
+    id: 'recent-one',
+    type: WidgetId.RecentTraffic,
+    x: 0,
+    y: 0,
+    w: 3,
+    h: 2,
+  },
+  {
+    id: 'origin-one',
+    type: WidgetId.OriginTraffic,
+    x: 3,
+    y: 0,
+    w: 3,
+    h: 3,
+  },
+]
+
+function Scene({
+  dashboardItems,
+  controls,
+}: {
+  dashboardItems: DashboardItem[]
+  controls: { setEditing: (editing: boolean) => void }
+}) {
+  const [editing, updateEditing] = useState(false)
+  controls.setEditing = updateEditing
+
+  return (
+    <DashboardProvider>
+      <DndContext>
+        <DndGridProvider
+          value={{
+            displayItems: dashboardItems,
+            getItemRect: () => ({ left: 0, top: 0, width: 240, height: 240 }),
+            dropInfoMap: {},
+            activeItemId: null,
+            resizingItemId: null,
+            disabled: !editing,
+            sourceOnly: false,
+            dragIdPrefix: '',
+            isOverlay: false,
+            constraintsMapRef: { current: {} },
+            onResizeStart: () => {},
+            onResizeMove: () => {},
+            onResizeEnd: () => {},
+          }}
+        >
+          <DashboardTrafficProvider items={dashboardItems}>
+            <TooltipProvider>
+              {dashboardItems.map(({ id, type }) => {
+                const Widget = RENDER_MAP[type]
+                return <Widget key={id} id={id} />
+              })}
+            </TooltipProvider>
+          </DashboardTrafficProvider>
+        </DndGridProvider>
+      </DndContext>
+    </DashboardProvider>
+  )
+}
+
+function storedConfigs(
+  originRange = 'last24_hours',
+  profileUid: string | null = null,
+) {
+  return JSON.stringify({
+    version: 1,
+    byInstance: {
+      'recent-one': {
+        type: 'recent-traffic',
+        range: 'last24_hours',
+        profileUid: null,
+        showDirections: false,
+      },
+      'origin-one': {
+        type: 'origin-traffic',
+        range: originRange,
+        profileUid,
+        showDirections: false,
+        topN: 3,
+        hideNames: false,
+      },
+    },
+  })
+}
+
+async function mount(
+  onTestFinished: (fn: () => void) => void,
+  originRange = 'last24_hours',
+  profileUid: string | null = null,
+  retention: string | null = '7d',
+  dashboardItems = items,
+) {
+  reports.requests = []
+  reports.metadataReads = []
+  reports.coreStopped = true
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  })
+  const rpc = createRpc(storedConfigs(originRange, profileUid), retention)
+  const controls = { setEditing: (_editing: boolean) => {} }
+  const rootRoute = createRootRoute({ component: Outlet })
+  const dashboardRoute = createRoute({
+    getParentRoute: () => rootRoute,
+    path: '/main/dashboard',
+    component: () => (
+      <Scene dashboardItems={dashboardItems} controls={controls} />
+    ),
+  })
+  const topologyRoute = createRoute({
+    getParentRoute: () => rootRoute,
+    path: '/main/topology',
+    component: () => <div>Traffic topology route</div>,
+  })
+  const router = createRouter({
+    routeTree: rootRoute.addChildren([dashboardRoute, topologyRoute]),
+    history: createMemoryHistory({ initialEntries: ['/main/dashboard'] }),
+  })
+  const rendered = await render(
+    <TestQueryProvider client={queryClient} rpc={rpc}>
+      <RouterProvider router={router} />
+    </TestQueryProvider>,
+  )
+  onTestFinished(async () => {
+    await rendered.unmount()
+    queryClient.clear()
+    rpc.dispose()
+  })
+  return { view: rendered, controls, router, queryClient }
+}
+
+test('narrow ranking rows keep shares on one line and scroll long names', async ({
+  onTestFinished,
+}) => {
+  const { view, queryClient } = await mount(onTestFinished)
+  await expect.poll(() => reports.requests.length).toBe(1)
+  const query = queryClient
+    .getQueryCache()
+    .getAll()
+    .find((query) => {
+      const data = query.state.data as TrafficReport | undefined
+      return Array.isArray(data?.rankings)
+    })!
+  const data = query.state.data as TrafficReport
+  queryClient.setQueryData(query.queryKey, {
+    ...data,
+    rankings: data.rankings.map((ranking) => ({
+      ...ranking,
+      distinct: 3,
+      groups: [600, 300, 124].map((bytes, index) => ({
+        key: `/apps/very-long-process-name-for-narrow-widget-${index}.exe`,
+        usage: usage(bytes, 0),
+        current_rate: null,
+      })),
+    })),
+  } satisfies TrafficReport)
+  const card = view.container.querySelectorAll<HTMLElement>(
+    '[data-slot="widget-traffic-report-card"]',
+  )[1]
+  card.style.width = '240px'
+  card.style.height = '400px'
+  await expect
+    .poll(
+      () =>
+        card.querySelectorAll('[data-slot="widget-traffic-report-row"]').length,
+    )
+    .toBe(2)
+  await expect
+    .poll(() => card.querySelector('[data-slot="text-marquee-content-item"]'))
+    .not.toBeNull()
+  for (const row of card.querySelectorAll<HTMLElement>(
+    '[data-slot="widget-traffic-report-row"]',
+  )) {
+    const share = row.querySelectorAll<HTMLElement>(
+      '[data-slot="text-marquee"]',
+    )[1]
+    expect(share.clientHeight).toBeLessThanOrEqual(18)
+    expect(
+      getComputedStyle(row.querySelector('[data-slot="action-swap-text"]')!)
+        .whiteSpace,
+    ).toBe('nowrap')
+  }
+  expect(getComputedStyle(card.firstElementChild!).overflowY).toBe('hidden')
+})
+
+test('does not fetch traffic metadata when no report widgets are visible', async ({
+  onTestFinished,
+}) => {
+  await mount(onTestFinished, 'last24_hours', null, '7d', [])
+
+  await expect.poll(() => reports.requests.length).toBe(0)
+  expect(reports.metadataReads).toEqual([])
+})
+
+test('duplicate widgets share one report request, and stopped core still has history', async ({
+  onTestFinished,
+}) => {
+  const { view } = await mount(onTestFinished)
+
+  await expect.poll(() => reports.requests.length).toBe(1)
+  await expect
+    .poll(
+      () =>
+        view.container.querySelectorAll(
+          '[data-slot="widget-traffic-report-card"]',
+        ).length,
+    )
+    .toBe(2)
+  expect(reports.requests[0].query.range).toBe('last24_hours')
+  expect(reports.requests[0].rankings).toEqual([
+    'origin',
+    'exit',
+    'target',
+    'rule',
+  ])
+  await expect.poll(() => view.container.textContent).toContain('1.00 KiB')
+})
+
+test('report widgets omit footer navigation while retaining editing controls', async ({
+  onTestFinished,
+}) => {
+  const { view, controls } = await mount(onTestFinished)
+
+  await expect.poll(() => reports.requests.length).toBe(1)
+  const links = page.getByRole('link', {
+    name: m.dashboard_widget_traffic_report_open(),
+  })
+  expect(links.elements()).toHaveLength(0)
+  expect(links.elements()).toHaveLength(0)
+  const originalLinks = links.elements()
+
+  expect(
+    page
+      .getByRole('button', {
+        name: m.dashboard_widget_traffic_report_details(),
+      })
+      .elements(),
+  ).toHaveLength(0)
+
+  controls.setEditing(true)
+  await expect
+    .poll(
+      () =>
+        view.container.querySelectorAll('[data-slot="widget-config-trigger"]')
+          .length,
+    )
+    .toBe(2)
+  expect(links.elements()).toHaveLength(0)
+  expect(links.elements()).toEqual(originalLinks)
+  for (const link of links.elements()) {
+    expect(link.getAttribute('aria-disabled')).toBe('true')
+    expect(link.tabIndex).toBe(-1)
+  }
+  expect(
+    page
+      .getByRole('button', {
+        name: m.dashboard_widget_traffic_report_details(),
+      })
+      .elements(),
+  ).toHaveLength(0)
+})
+
+test.for([null, 'deleted-profile'])(
+  'traffic reports preserve the widget profile scope %s',
+  async (profileUid, { onTestFinished }) => {
+    const { view } = await mount(onTestFinished, 'last7_days', profileUid)
+    await expect.poll(() => reports.requests.length).toBe(2)
+    const links = page.getByRole('link', {
+      name: m.dashboard_widget_traffic_report_open(),
+    })
+    expect(links.elements()).toHaveLength(0)
+    expect(
+      reports.requests.some((request) =>
+        request.query.filters.some(
+          (filter) =>
+            filter.dimension === 'profile' && filter.value === profileUid,
+        ),
+      ),
+    ).toBe(Boolean(profileUid))
+    await expect.poll(() => view.container.textContent).toContain('7.00 KiB')
+  },
+)
+
+test('different widget ranges use separate reports without crossing values', async ({
+  onTestFinished,
+}) => {
+  const { view } = await mount(onTestFinished, 'last7_days')
+
+  await expect.poll(() => reports.requests.length).toBe(2)
+  await expect
+    .poll(() => view.container.textContent?.includes('7.00 KiB'))
+    .toBe(true)
+  expect(reports.requests.map((request) => request.query.range).sort()).toEqual(
+    ['last24_hours', 'last7_days'],
+  )
+  expect(reports.coreStopped).toBe(true)
+})
+
+test('a saved profile filter keeps a visible missing UID after its profile is deleted', async ({
+  onTestFinished,
+}) => {
+  const { view } = await mount(
+    onTestFinished,
+    'last24_hours',
+    'deleted-profile',
+  )
+
+  await expect.poll(() => reports.requests.length).toBe(2)
+  await expect
+    .poll(() => view.container.textContent)
+    .toContain(
+      m.dashboard_widget_config_missing_reference({ name: 'deleted-profile' }),
+    )
+  expect(
+    reports.requests.some((request) =>
+      request.query.filters.some(
+        (filter) =>
+          filter.dimension === 'profile' && filter.value === 'deleted-profile',
+      ),
+    ),
+  ).toBe(true)
+})
+
+test('long ranges omit the removed retention footer', async ({
+  onTestFinished,
+}) => {
+  const { view } = await mount(onTestFinished, 'last30_days')
+
+  await expect.poll(() => reports.requests.length).toBe(2)
+  await expect
+    .poll(() => view.container.textContent)
+    .not.toContain(m.dashboard_widget_traffic_report_retention_limited_short())
+})
+
+test('unavailable retention does not add a footer', async ({
+  onTestFinished,
+}) => {
+  const { view } = await mount(onTestFinished, 'last30_days', null, null)
+
+  await expect.poll(() => reports.requests.length).toBe(2)
+  await expect
+    .poll(() => view.container.textContent)
+    .not.toContain(m.dashboard_widget_traffic_report_retention_unknown())
+  expect(view.container.textContent).not.toContain(
+    m.dashboard_widget_traffic_report_retention_limited_short(),
+  )
+})

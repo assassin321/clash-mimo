@@ -1,0 +1,122 @@
+import CloseSmallOutlineRounded from '~icons/material-symbols/close-small-outline-rounded'
+import DownloadRounded from '~icons/material-symbols/download-rounded'
+import LinkRounded from '~icons/material-symbols/link-rounded'
+import { useState } from 'react'
+import { Controller, useForm } from 'react-hook-form'
+import { z } from 'zod'
+import { Button } from '@nyanpasu/ui/button'
+import { useImportUrl } from '@/components/profile-import/import-url-provider'
+import { m } from '@/paraglide/messages'
+import { message } from '@/utils/notification'
+import { zodResolver } from '@hookform/resolvers/zod'
+import type { FolderId } from '@nyanpasu/rpc/types'
+import { cn } from '@nyanpasu/utils'
+import { subscriptionUrlSchema } from './subscription-url-schema'
+
+const formSchema = z.object({
+  url: subscriptionUrlSchema,
+})
+
+export default function ProfileQuickImport({
+  folder,
+}: {
+  /** Folder the imported Config joins; omitted imports it ungrouped. */
+  folder?: FolderId | null
+}) {
+  const importUrl = useImportUrl()
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      url: '',
+    },
+  })
+
+  const handleClear = () => {
+    form.reset({ url: '' })
+  }
+
+  const hasValue = form.watch('url')
+
+  const [loading, setLoading] = useState(false)
+
+  const handleSubmit = form.handleSubmit(
+    async (data) => {
+      try {
+        setLoading(true)
+
+        const uid = await importUrl({
+          url: data.url,
+          name: null,
+          option: null,
+          folder,
+        })
+        if (uid === null) {
+          return
+        }
+
+        handleClear()
+
+        message(m.profile_quick_import_success_message(), {
+          title: 'Import profile',
+          kind: 'info',
+        })
+      } catch (error) {
+        console.error(error)
+      } finally {
+        setLoading(false)
+      }
+    },
+    (errors) => {
+      console.error(errors)
+      message(errors.url?.message ?? '', {
+        title: 'Import profile failed',
+        kind: 'error',
+      })
+    },
+  )
+
+  return (
+    <form
+      className={cn(
+        'relative flex flex-none items-center gap-1',
+        'bg-surface h-12 w-full rounded-full pr-1 pl-3',
+        'shadow-outline/30 dark:shadow-surface-variant/10 shadow',
+      )}
+      onSubmit={handleSubmit}
+    >
+      <LinkRounded className="size-6" />
+
+      <Controller
+        control={form.control}
+        name="url"
+        render={({ field }) => (
+          <input
+            className="h-full min-w-0 flex-1 px-1 text-sm outline-hidden"
+            type="text"
+            placeholder={m.profile_quick_import_placeholder()}
+            autoComplete="off"
+            autoCapitalize="off"
+            autoCorrect="off"
+            spellCheck={false}
+            {...field}
+          />
+        )}
+      />
+
+      {hasValue && (
+        <>
+          {!loading && (
+            <Button icon className="size-8" onClick={handleClear} type="button">
+              <CloseSmallOutlineRounded className="size-6" />
+            </Button>
+          )}
+
+          <Button icon className="size-8" type="submit" loading={loading}>
+            <DownloadRounded className="size-6" />
+          </Button>
+        </>
+      )}
+    </form>
+  )
+}

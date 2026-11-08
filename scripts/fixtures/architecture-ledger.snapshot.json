@@ -1,0 +1,32 @@
+{
+  "roots": [
+    "backend"
+  ],
+  "metrics": {
+    "config_calls": {
+      "total": 0,
+      "byKey": {}
+    },
+    "service_globals": {
+      "total": 0,
+      "byKey": {}
+    },
+    "migration_markers": {
+      "total": 0,
+      "byKey": {}
+    },
+    "legacy_dto_refs": {
+      "total": 0,
+      "byKey": {}
+    },
+    "test_real_dirs": {
+      "total": 0,
+      "byKey": {}
+    },
+    "mutable_statics": {
+      "total": 0,
+      "byKey": {}
+    }
+  },
+  "bridgeFiles": []
+}

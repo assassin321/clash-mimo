@@ -1,0 +1,157 @@
+{
+  "_version": 1,
+  "tray": {
+    "copy_env": {
+      "cmd": "复制环境变量 (Cmd)",
+      "ps": "复制环境变量 (Pwsh)",
+      "sh": "复制环境变量 (Shell)"
+    },
+    "no_proxies": "无代理",
+    "select_proxy": "选择代理",
+    "restore_auto_selection": "恢复自动选择",
+    "dashboard": "显示 Clash Mimo",
+    "direct_mode": "直连模式",
+    "global_mode": "全局模式",
+    "more": {
+      "menu": "更多",
+      "restart_app": "重启 Clash Mimo",
+      "restart_core": "重启 Clash 内核"
+    },
+    "open_dir": {
+      "menu": "打开目录",
+      "app_config_dir": "配置目录",
+      "app_data_dir": "数据目录",
+      "core_dir": "内核目录",
+      "log_dir": "日志目录"
+    },
+    "proxy_action": {
+      "enabled": "已启用",
+      "disabled": "已禁用"
+    },
+    "quit": "退出",
+    "rule_mode": "规则模式",
+    "script_mode": "脚本模式",
+    "system_proxy": "系统代理",
+    "tun_mode": "TUN 模式"
+  },
+  "dialog": {
+    "crash_reporter": {
+      "heading": "Clash Mimo 遇到问题并已关闭",
+      "description": "请在 GitHub 上提交此报告，帮助我们修复问题。",
+      "version": "版本",
+      "system": "系统",
+      "error": "错误",
+      "location": "位置",
+      "backtrace": "崩溃堆栈",
+      "environment": "环境信息",
+      "copy": "复制报告",
+      "copied": "报告已复制",
+      "copy_section": "复制",
+      "section_copied": "已复制",
+      "copy_failed": "无法复制报告，请手动选中并复制",
+      "close": "关闭",
+      "report_issue": "报告问题",
+      "issue_opened": "问题页面已打开。将诊断压缩包拖入问题以附加日志。",
+      "open_failed": "无法打开 issue 页面",
+      "manual_heading": "报告问题",
+      "manual_description": "在 GitHub 描述问题，帮助我们修复。",
+      "collecting": "正在收集诊断信息",
+      "step_host": "主机",
+      "step_webview": "WebView",
+      "step_core": "内核",
+      "step_app_logs": "应用日志",
+      "step_core_logs": "内核日志",
+      "ready": "诊断信息已就绪",
+      "failed": "部分诊断信息无法收集",
+      "interrupted": "诊断已中断",
+      "show_in_folder": "在文件夹中显示"
+    },
+    "panic": "请将此问题汇报到 GitHub Issues。",
+    "migrate": "检测到旧版本配置文件，是否迁移到新版本?\n警告：此操作会覆盖掉现有配置文件！",
+    "custom_app_dir_migrate": "你将要更改应用目录至 %{path}。\n需要将现有数据迁移到新目录吗？",
+    "warning": {
+      "enable_tun_with_no_permission": "TUN 模式需要授予管理员权限或启用服务模式，当前都未开启，因此 TUN 模式将无法正常工作。"
+    },
+    "info": {
+      "grant_core_permission": "Clash 内核需要管理员权限才能使得 TUN 模式正常工作，是否授予？\n\n请注意：此操作需要输入密码。"
+    },
+    "startup_failure": {
+      "unresolved_path": "无法解析路径，请查看下方详情。",
+      "heading": "启动失败",
+      "path": "路径",
+      "details": "详情",
+      "open_containing": "打开所在目录",
+      "open_backups": "打开备份目录",
+      "open_logs": "打开日志目录",
+      "copy": "复制详情",
+      "copied": "已复制",
+      "copy_failed": "无法复制详情",
+      "open_failed": "无法打开目录",
+      "exit": "退出",
+      "directories": {
+        "description": "应用目录不可用。",
+        "recovery": "请检查权限和剩余磁盘空间。便携版可移至可写位置。"
+      },
+      "migration_failed": {
+        "description": "配置迁移未能完成。",
+        "recovery": "请修正报告的问题，或从可用备份恢复配置。"
+      },
+      "newer_version": {
+        "description": "这些文件由更新版本写入。",
+        "recovery": "请安装更新版本的 Clash Mimo，或恢复兼容的备份。"
+      },
+      "user_config": {
+        "description": "无法读取或验证配置文件。",
+        "recovery": "请修正下方文件，或从备份目录恢复。"
+      },
+      "core_runtime_directory": {
+        "description": "内核运行目录不可用。",
+        "recovery": "请先检查目录权限。退出所有 Clash Mimo 进程后，可删除此目录并重启。"
+      },
+      "jobs_database": {
+        "description": "任务数据库不可用。",
+        "recovery": "此文件仅保存任务历史。可删除或移走 jobs.redb 后重启。"
+      },
+      "web_view2": {
+        "description": "WebView2 运行时不可用。",
+        "recovery": "请重新下载便携版，或重新安装 Clash Mimo。",
+        "portable_recovery": "请重新下载便携版软件包。",
+        "installed_recovery": "请重新安装 Clash Mimo。"
+      },
+      "logging": {
+        "description": "应用日志不可用。",
+        "recovery": "请检查日志位置的权限和剩余磁盘空间。"
+      },
+      "permission": {
+        "description": "访问所需文件或目录被拒绝。",
+        "recovery": "请检查下方路径的权限，确保当前账户可以读写。"
+      },
+      "busy": {
+        "description": "所需文件或目录正被占用。",
+        "recovery": "请退出其他 Clash Mimo 进程并解除文件占用，然后重启。"
+      },
+      "internal": {
+        "description": "内部错误阻止了应用启动。",
+        "recovery": "请复制详情，并附上版本与日志提交问题。"
+      }
+    }
+  },
+  "setting": {
+    "connection": {
+      "interrupt": {
+        "proxy": {
+          "label": "当代理切换时打断连接"
+        },
+        "profile": {
+          "label": "当配置文件切换时打断连接"
+        },
+        "mode": {
+          "label": "当模式切换时打断连接"
+        }
+      }
+    }
+  },
+  "break_when_proxy_change": "当代理切换时打断连接",
+  "break_when_profile_change": "当配置文件切换时打断连接",
+  "break_when_mode_change": "当模式切换时打断连接"
+}

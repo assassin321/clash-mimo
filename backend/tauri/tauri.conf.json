@@ -1,0 +1,114 @@
+{
+  "$schema": "../../node_modules/@tauri-apps/cli/config.schema.json",
+  "mainBinaryName": "Clash Mimo",
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "windows": {
+      "certificateThumbprint": null,
+      "digestAlgorithm": "sha256",
+      "timestampUrl": "",
+      "webviewInstallMode": {
+        "type": "embedBootstrapper"
+      },
+      "wix": {
+        "language": ["en-US", "ja-JP", "ko-KR", "ru-RU", "zh-CN", "zh-TW"],
+        "template": "./templates/installer.wxs",
+        "fragmentPaths": ["./templates/cleanup.wxs"]
+      },
+      "nsis": {
+        "displayLanguageSelector": true,
+        "installerIcon": "icons/icon.ico",
+        "sidebarImage": "templates/nsis-sidebar.bmp",
+        "languages": [
+          "English",
+          "Japanese",
+          "Korean",
+          "Russian",
+          "SimpChinese",
+          "TradChinese"
+        ],
+        "template": "./templates/installer.nsi",
+        "installMode": "both"
+      }
+    },
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "resources": ["resources"],
+    "externalBin": [
+      "sidecar/clash",
+      "sidecar/mihomo",
+      "sidecar/mihomo-alpha",
+      "sidecar/clash-rs",
+      "sidecar/clash-rs-alpha",
+      "sidecar/meow",
+      "sidecar/meow-alpha",
+      "sidecar/mimo-service"
+    ],
+    "copyright": "Copyright © 2026 assassin321",
+    "category": "DeveloperTool",
+    "shortDescription": "Clash Mimo! (∠・ω< )⌒☆",
+    "longDescription": "Clash Mimo! (∠・ω< )⌒☆",
+    "macOS": {
+      "frameworks": [],
+      "minimumSystemVersion": "12.6",
+      "exceptionDomain": "",
+      "signingIdentity": null,
+      "entitlements": null,
+      "dmg": {
+        "background": "templates/dmg-background.png",
+        "windowSize": {
+          "width": 836,
+          "height": 503
+        },
+        "appPosition": {
+          "x": 530,
+          "y": 252
+        },
+        "applicationFolderPosition": {
+          "x": 235,
+          "y": 252
+        }
+      }
+    },
+    "linux": {
+      "deb": {
+        "depends": []
+      }
+    },
+    "licenseFile": "../../LICENSE",
+    "createUpdaterArtifacts": "v1Compatible"
+  },
+  "build": {
+    "beforeBuildCommand": "pnpm generate:credits && pnpm run-p web:build generate:git-info && echo $(pwd)",
+    "frontendDist": "./tmp/dist",
+    "beforeDevCommand": "pnpm run web:dev",
+    "devUrl": "http://localhost:3000/"
+  },
+  "productName": "Clash Mimo",
+  "version": "1.6.8",
+  "identifier": "mimo.clash.app",
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDVDRDUwRjMwMkFEMUNERjYKUldUMnpkRXFNQS9WWE5kQ0dtSXJCckpzUGVCOCtRa0kyZVl3ajlqUlVBR0VTTFd3TTVQbDJqK08K",
+      "endpoints": [
+        "https://nyanpasu-script.majokeiko.com/assassin321/clash-mimo/releases/download/updater/update-proxy.json",
+        "https://nyanpasu.surge.sh/updater/update-proxy.json",
+        "https://github.com/assassin321/clash-mimo/releases/download/updater/update.json",
+        "https://ghfast.top/https://github.com/assassin321/clash-mimo/releases/download/updater/update.json"
+      ]
+    }
+  },
+  "app": {
+    "windows": [],
+    "security": {
+      "csp": "script-src 'unsafe-eval' 'self'; default-src blob: data: filesystem: ws: wss: http: https: tauri: 'unsafe-eval' 'unsafe-inline' 'self'; img-src 'self' data: asset: blob: http://localhost:* https:; connect-src 'self' data: ipc: http://ipc.localhost http://127.0.0.1:* http://localhost:* ws://127.0.0.1:* ws://localhost:* wss://*",
+      "capabilities": ["main-capability"]
+    }
+  }
+}

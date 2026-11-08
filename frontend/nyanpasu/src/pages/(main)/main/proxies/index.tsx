@@ -1,0 +1,25 @@
+import { AppContentScrollArea } from '@nyanpasu/ui/scroll-area'
+import { useIsMobile } from '@nyanpasu/hooks'
+import { createFileRoute } from '@tanstack/react-router'
+import ProxiesNavigate from './_modules/proxies-navigate'
+
+export const Route = createFileRoute('/(main)/main/proxies/')({
+  component: RouteComponent,
+})
+
+function RouteComponent() {
+  const isMobile = useIsMobile()
+
+  if (!isMobile) {
+    return null
+  }
+
+  return (
+    <AppContentScrollArea
+      className="bg-surface-variant/50 dark:bg-transparent"
+      data-slot="proxies-sidebar-scroll-area"
+    >
+      <ProxiesNavigate />
+    </AppContentScrollArea>
+  )
+}

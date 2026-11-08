@@ -1,0 +1,77 @@
+name: '[Reusable] Publish Updater Manifests'
+
+on:
+  workflow_dispatch:
+    inputs:
+      nightly:
+        description: 'Nightly'
+        required: true
+        type: boolean
+        default: false
+      release_body:
+        description: 'Release Body'
+        required: false
+        type: string
+  workflow_call:
+    inputs:
+      nightly:
+        description: 'Nightly'
+        required: true
+        type: boolean
+      release_body:
+        description: 'Release Body'
+        required: false
+        type: string
+
+jobs:
+  updater:
+    name: Update Updater
+    runs-on: ubuntu-latest
+    # Runs replace the same assets on the shared `updater` release. Each run
+    # rebuilds its feeds from the current release list, so a newer pending run
+    # may supersede an older one of the same kind.
+    concurrency:
+      group: updater-manifests-${{ inputs.nightly }}
+      cancel-in-progress: false
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.ref }}
+          # blocked by https://github.com/actions/checkout/issues/1467
+
+      - name: Fetch git tags
+        run: git fetch --tags
+
+      - name: Install Node latest
+        uses: actions/setup-node@v7
+        with:
+          node-version: latest
+
+      - uses: pnpm/action-setup@v6
+        name: Install pnpm
+        with:
+          run_install: false
+
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Test unified updater manifest
+        run: deno task test:updater
+
+      - name: Update Nightly Updater
+        if: ${{ inputs.nightly == true }}
+        run: deno task updater:nightly
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update Stable and Beta Updaters
+        if: ${{ inputs.nightly == false }}
+        run: deno task updater
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          RELEASE_BODY: ${{ inputs.release_body || github.event.release.body }}

@@ -1,0 +1,137 @@
+import BoxOutlineRounded from '~icons/material-symbols/box-outline-rounded'
+import DirectionsRunRounded from '~icons/material-symbols/directions-run-rounded'
+import { z } from 'zod'
+import { Button } from '@nyanpasu/ui/button'
+import { EmptyState } from '@nyanpasu/ui/empty-state'
+import { AppContentScrollArea } from '@nyanpasu/ui/scroll-area'
+import { Sidebar, SidebarContent } from '@nyanpasu/ui/sidebar'
+import { AnimatedOutletPreset } from '@/components/router/animated-outlet'
+import { m } from '@/paraglide/messages'
+import { useLockFn } from '@nyanpasu/hooks'
+import { ProxyMode, useClashProxies, useProxyMode } from '@nyanpasu/query'
+import { cn } from '@nyanpasu/utils'
+import { createFileRoute, Link } from '@tanstack/react-router'
+import { zodSearchValidator } from '@tanstack/router-zod-adapter'
+import { ProfileType } from '../profiles/_modules/consts'
+import ProxiesDndProvider from './_modules/proxies-dnd-provider'
+import ProxiesLayoutProvider from './_modules/proxies-layout-provider'
+import ProxiesNavigate from './_modules/proxies-navigate'
+
+const searchSchema = z.object({
+  q: z.string().optional(),
+})
+
+export const Route = createFileRoute('/(main)/main/proxies')({
+  component: RouteComponent,
+  validateSearch: zodSearchValidator(searchSchema),
+})
+
+const Empty = () => {
+  const proxyMode = useProxyMode()
+
+  const Icon = proxyMode.value.direct ? DirectionsRunRounded : BoxOutlineRounded
+
+  const handleSwitchMode = useLockFn(async (mode: ProxyMode) => {
+    await proxyMode.upsert(mode)
+  })
+
+  return (
+    <EmptyState
+      className="absolute inset-0"
+      data-slot="proxies-no-proxies"
+      icon={Icon}
+      message={
+        <span data-slot="proxies-no-proxies-message">
+          {proxyMode.value.direct
+            ? m.proxies_group_direct_message()
+            : m.proxies_group_empty_message()}
+        </span>
+      }
+    >
+      {proxyMode.value.direct ? (
+        <div className="flex items-center gap-2">
+          <Button
+            variant="raised"
+            data-slot="switch-rule-mode-button"
+            onClick={() => handleSwitchMode('rule')}
+          >
+            {m.proxies_group_direct_switch_rule_button_text()}
+          </Button>
+
+          <Button
+            variant="raised"
+            data-slot="switch-script-mode-button"
+            onClick={() => handleSwitchMode('global')}
+          >
+            {m.proxies_group_direct_switch_global_button_text()}
+          </Button>
+        </div>
+      ) : (
+        <Button variant="raised" data-slot="proxies-no-proxies-button" asChild>
+          <Link
+            className="flex items-center gap-2"
+            to="/main/profiles/$type"
+            params={{
+              type: ProfileType.Profile,
+            }}
+          >
+            {m.proxies_group_empty_button_text()}
+          </Link>
+        </Button>
+      )}
+    </EmptyState>
+  )
+}
+
+function RouteComponent() {
+  const {
+    proxies: { data: proxies },
+  } = useClashProxies()
+
+  const isNoProxies = !proxies?.groups?.length || proxies?.groups?.length === 0
+
+  const { value: proxyMode } = useProxyMode()
+
+  return (
+    <ProxiesLayoutProvider>
+      <ProxiesDndProvider>
+        <Sidebar data-slot="proxies-container">
+          {!isNoProxies && (proxyMode.rule || proxyMode.script) && (
+            <SidebarContent
+              className="bg-surface-variant/50 dark:bg-transparent"
+              data-slot="proxies-sidebar-scroll-area"
+            >
+              <ProxiesNavigate />
+            </SidebarContent>
+          )}
+
+          <AppContentScrollArea
+            className={cn(
+              // A zero basis splits the width 3:1 with the sidebar regardless of
+              // the routed content, so the sidebar keeps its width across routes.
+              'group/proxies-content flex-[3_1_0%]',
+              // for AnimatedOutletPreset transition to work properly,
+              // the scroll area must have overflow: clip
+              'overflow-clip',
+            )}
+            data-slot="proxies-content-scroll-area"
+          >
+            {isNoProxies || proxyMode.direct ? (
+              <Empty />
+            ) : (
+              <div
+                className={cn(
+                  'container mx-auto w-full min-w-full',
+                  'flex min-h-full flex-col',
+                )}
+                data-slot="proxies-content"
+              >
+                <AnimatedOutletPreset className="flex flex-1 flex-col" />
+              </div>
+            )}
+          </AppContentScrollArea>
+        </Sidebar>
+      </ProxiesDndProvider>
+    </ProxiesLayoutProvider>
+  )
+}

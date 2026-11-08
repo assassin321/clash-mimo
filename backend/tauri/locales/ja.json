@@ -1,0 +1,157 @@
+{
+  "_version": 1,
+  "tray": {
+    "copy_env": {
+      "cmd": "環境変数をコピー (Cmd)",
+      "ps": "環境変数をコピー (Pwsh)",
+      "sh": "環境変数をコピー (Shell)"
+    },
+    "no_proxies": "プロキシなし",
+    "select_proxy": "プロキシを選択",
+    "restore_auto_selection": "自動選択に戻す",
+    "dashboard": "Clash Mimo を表示",
+    "direct_mode": "ダイレクトモード",
+    "global_mode": "グローバルモード",
+    "more": {
+      "menu": "その他",
+      "restart_app": "Clash Mimo を再起動",
+      "restart_core": "Clash コアを再起動"
+    },
+    "open_dir": {
+      "menu": "ディレクトリを開く",
+      "app_config_dir": "設定ディレクトリ",
+      "app_data_dir": "データディレクトリ",
+      "core_dir": "コアディレクトリ",
+      "log_dir": "ログディレクトリ"
+    },
+    "proxy_action": {
+      "enabled": "有効",
+      "disabled": "無効"
+    },
+    "quit": "終了",
+    "rule_mode": "ルールモード",
+    "script_mode": "スクリプトモード",
+    "system_proxy": "システムプロキシ",
+    "tun_mode": "TUN モード"
+  },
+  "dialog": {
+    "crash_reporter": {
+      "heading": "Clash Mimo で問題が発生し、終了しました",
+      "description": "修正に役立てるため、このレポートを GitHub に送信してください。",
+      "version": "バージョン",
+      "system": "システム",
+      "error": "エラー",
+      "location": "場所",
+      "backtrace": "バックトレース",
+      "environment": "環境情報",
+      "copy": "レポートをコピー",
+      "copied": "コピーしました",
+      "copy_section": "コピー",
+      "section_copied": "コピーしました",
+      "copy_failed": "レポートをコピーできませんでした。選択して手動でコピーしてください",
+      "close": "閉じる",
+      "report_issue": "問題を報告",
+      "issue_opened": "報告ページを開きました。診断アーカイブをドラッグしてログを添付してください。",
+      "open_failed": "Issue ページを開けませんでした",
+      "manual_heading": "問題を報告",
+      "manual_description": "GitHub で問題の詳細をお知らせください。",
+      "collecting": "診断情報を収集中",
+      "step_host": "ホスト",
+      "step_webview": "WebView",
+      "step_core": "コア",
+      "step_app_logs": "アプリログ",
+      "step_core_logs": "コアログ",
+      "ready": "診断情報の準備完了",
+      "failed": "一部の診断情報を収集できませんでした",
+      "interrupted": "診断が中断されました",
+      "show_in_folder": "フォルダーに表示"
+    },
+    "panic": "この問題を GitHub の Issue トラッカーに報告してください。",
+    "migrate": "古いバージョンの設定ファイルが見つかりました。新しいバージョンに移行しますか？\n警告：既存の設定がある場合は、現在の設定が上書きされます",
+    "custom_app_dir_migrate": "アプリのディレクトリを %{path} に設定します。\n現在のアプリのディレクトリを新しい場所に移動しますか？",
+    "warning": {
+      "enable_tun_with_no_permission": "TUN モードには管理者権限またはサービスモードが必要です。どちらも有効になっていないため、TUN モードは正しく動作しません。"
+    },
+    "info": {
+      "grant_core_permission": "TUN モードを正しく動作させるには、Clash コアに管理者権限が必要です。権限を付与しますか？\nこの操作にはパスワードの入力が必要です。"
+    },
+    "startup_failure": {
+      "unresolved_path": "パスを解決できませんでした。以下の詳細を確認してください。",
+      "heading": "起動できませんでした",
+      "path": "パス",
+      "details": "詳細",
+      "open_containing": "ファイルの場所を開く",
+      "open_backups": "バックアップフォルダーを開く",
+      "open_logs": "ログフォルダーを開く",
+      "copy": "詳細をコピー",
+      "copied": "コピーしました",
+      "copy_failed": "コピーできませんでした",
+      "open_failed": "フォルダーを開けませんでした",
+      "exit": "終了",
+      "directories": {
+        "description": "アプリのディレクトリを使用できません。",
+        "recovery": "権限とディスクの空き容量を確認してください。ポータブル版は書き込み可能な場所に移動してください。"
+      },
+      "migration_failed": {
+        "description": "設定の移行を完了できませんでした。",
+        "recovery": "表示された問題を修正するか、利用可能なバックアップから設定を復元してください。"
+      },
+      "newer_version": {
+        "description": "これらのファイルは新しいバージョンで作成されました。",
+        "recovery": "新しいバージョンの Clash Mimo をインストールするか、互換性のあるバックアップを復元してください。"
+      },
+      "user_config": {
+        "description": "設定ファイルの読み込みまたは検証に失敗しました。",
+        "recovery": "以下のファイルを修正するか、バックアップフォルダーから復元してください。"
+      },
+      "core_runtime_directory": {
+        "description": "コアの実行ディレクトリを使用できません。",
+        "recovery": "まず権限を確認してください。すべての Clash Mimo プロセスを終了してから、このディレクトリを削除して再起動できます。"
+      },
+      "jobs_database": {
+        "description": "タスクデータベースを使用できません。",
+        "recovery": "このファイルにはタスク履歴のみが保存されています。jobs.redb を削除または移動してから再起動できます。"
+      },
+      "web_view2": {
+        "description": "WebView2 ランタイムを使用できません。",
+        "recovery": "ポータブル版を再ダウンロードするか、Clash Mimo を再インストールしてください。",
+        "portable_recovery": "ポータブル版パッケージを再ダウンロードしてください。",
+        "installed_recovery": "Clash Mimo を再インストールしてください。"
+      },
+      "logging": {
+        "description": "アプリのログを使用できません。",
+        "recovery": "ログ保存先の権限とディスクの空き容量を確認してください。"
+      },
+      "permission": {
+        "description": "必要なファイルまたはディレクトリへのアクセスが拒否されました。",
+        "recovery": "以下のパスの権限を確認し、現在のアカウントで読み書きできるようにしてください。"
+      },
+      "busy": {
+        "description": "必要なファイルまたはディレクトリが使用中です。",
+        "recovery": "他の Clash Mimo プロセスを終了し、ファイルのロックを解除してから再起動してください。"
+      },
+      "internal": {
+        "description": "内部エラーにより起動できませんでした。",
+        "recovery": "詳細をコピーし、バージョンとログを添えて問題を報告してください。"
+      }
+    }
+  },
+  "setting": {
+    "connection": {
+      "interrupt": {
+        "proxy": {
+          "label": "プロキシを切り替えたときに接続を中断する"
+        },
+        "profile": {
+          "label": "ファイルを切り替えたときに接続を中断する"
+        },
+        "mode": {
+          "label": "モードを切り替えたときに接続を中断する"
+        }
+      }
+    }
+  },
+  "break_when_proxy_change": "プロキシを切り替えたときに接続を中断する",
+  "break_when_profile_change": "ファイルを切り替えたときに接続を中断する",
+  "break_when_mode_change": "モードを切り替えたときに接続を中断する"
+}

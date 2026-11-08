@@ -1,0 +1,57 @@
+name: '[Reusable] Notify Telegram of Releases'
+
+on:
+  workflow_dispatch:
+    inputs:
+      nightly:
+        description: 'Nightly'
+        required: true
+        type: boolean
+        default: false
+
+      tag:
+        description: 'Release tag (defaults to the package version)'
+        required: false
+        type: string
+        default: ''
+
+  workflow_call:
+    inputs:
+      nightly:
+        description: 'Nightly'
+        required: true
+        type: boolean
+        default: false
+
+      tag:
+        description: 'Release tag (defaults to the package version)'
+        required: false
+        type: string
+        default: ''
+
+jobs:
+  telegram:
+    name: Notify Telegram
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Send Release Notification
+        run: |
+          ARGS=""
+          if [ "$NIGHTLY" = "true" ]; then
+            ARGS="--nightly"
+          fi
+          deno task telegram-notify $ARGS
+        env:
+          NIGHTLY: ${{ inputs.nightly }}
+          RELEASE_TAG: ${{ inputs.tag }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_RELEASE_CHANNEL: ${{ vars.TELEGRAM_RELEASE_CHANNEL }}
+          TELEGRAM_ARCHIVE_CHANNEL: ${{ vars.TELEGRAM_ARCHIVE_CHANNEL }}
+          WORKFLOW_RUN_ID: ${{ github.run_id }}
