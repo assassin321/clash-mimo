@@ -66,7 +66,7 @@ body:
     attributes:
       label: 环境信息
       description: 请在此处提供你的环境信息 — 操作系统版本、Clash Mimo 版本、Clash 内核及其版本等。
-      placeholder: 你可以手动填写上述信息。你也可以在 Nyanpasu 桌面视图的工具栏中点击「帮助 → 报告问题」按钮打开新页面，以自动填入更详细的信息。
+      placeholder: 你可以手动填写上述信息。你也可以在 Mimo 桌面视图的工具栏中点击「帮助 → 报告问题」按钮打开新页面，以自动填入更详细的信息。
     validations:
       required: true
 
@@ -87,7 +87,7 @@ body:
         如果你不确定是否需要提供日志，请留空。维护者会根据具体情况决定是否向你索要日志。
         如果你想提供日志，请确保已删除所有敏感信息，并且日志级别设置为 `Trace` 或 `Debug`。请参阅[常见问题 - 配置/日志目录](https://nyanpasu.org/zh-cn/others/faq/#2-clash-mimo-%E9%85%8D%E7%BD%AE%E6%97%A5%E5%BF%97%E7%9B%AE%E5%BD%95%E5%9C%A8%E5%93%AA%E9%87%8C)。
         如果日志过长，你可以使用 [GitHub Gist](https://gist.github.com/) 或 [Hastebin](https://hastebin.com/)，并提供链接。
-        你也可以通过 Nyanpasu 桌面视图工具栏的「帮助 → 收集日志」以获取一份日志压缩包，检查并删除其中日志的敏感信息后拖曳到此处。
+        你也可以通过 Mimo 桌面视图工具栏的「帮助 → 收集日志」以获取一份日志压缩包，检查并删除其中日志的敏感信息后拖曳到此处。
       placeholder: 如果可用，填写一个链接、一个代码块或一个压缩文件。
     validations:
       required: false

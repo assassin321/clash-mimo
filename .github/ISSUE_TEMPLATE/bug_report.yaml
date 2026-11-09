@@ -68,7 +68,7 @@ body:
       description: Provide your environment information here — operating system version, Clash Mimo version, Clash core, and its version, etc.
       placeholder: |
         You can enter the above information manually.
-        Alternatively, click the “Help” → “Report issue” button in the toolbar of the Nyanpasu desktop view to open a new page that automatically fills in more detailed information.
+        Alternatively, click the “Help” → “Report issue” button in the toolbar of the Mimo desktop view to open a new page that automatically fills in more detailed information.
     validations:
       required: true
 
@@ -89,7 +89,7 @@ body:
         If you are not sure whether you should provide logs, leave this field blank. Maintainers will decide whether to ask you for logs based on the situation.
         If you want to provide logs, make sure you have removed all sensitive information and that the log level is set to `Trace` or `Debug`. See [FAQ - Config/Log Dir](https://nyanpasu.org/others/faq/#2-where-is-the-clash-mimo-configlogs-directory).
         If the logs are too long, you can use [Gist](https://gist.github.com/) or [Hastebin](https://hastebin.com/) and provide a link.
-        You can also generate a log archive by clicking “Help” → “Collect logs” in the toolbar of the Nyanpasu desktop view, then drag it here after reviewing the logs and removing any sensitive information.
+        You can also generate a log archive by clicking “Help” → “Collect logs” in the toolbar of the Mimo desktop view, then drag it here after reviewing the logs and removing any sensitive information.
       placeholder: Should be a link, a code block, or an archive file — if available.
     validations:
       required: false
