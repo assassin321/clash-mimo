@@ -204,8 +204,8 @@ mod tests {
         use clap::Parser;
 
         for args in [
-            vec!["mimo-service", "update", "--user", "alice"],
-            vec!["mimo-service", "update", "--nyanpasu-data-dir", "data"],
+            vec!["nyanpasu-service", "update", "--user", "alice"],
+            vec!["nyanpasu-service", "update", "--nyanpasu-data-dir", "data"],
         ] {
             let error = Cli::try_parse_from(args).err().unwrap();
             assert_eq!(
@@ -215,7 +215,7 @@ mod tests {
         }
         for check in [false, true] {
             let mut args = vec![
-                "mimo-service",
+                "nyanpasu-service",
                 "update",
                 "--user",
                 "alice",

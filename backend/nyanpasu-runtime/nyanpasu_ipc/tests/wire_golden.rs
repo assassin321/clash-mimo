@@ -1,7 +1,7 @@
 //! Golden snapshots of the IPC wire format.
 //!
 //! Every literal here is shipped protocol: the GUI decodes these exact shapes.
-//! A diff in this file is a breaking change to clash-mimo, never a test
+//! A diff in this file is a breaking change to clash-nyanpasu, never a test
 //! that needs updating — if one of these fails, revert the change that broke
 //! it or ship a protocol version.
 
@@ -376,7 +376,7 @@ fn the_ws_events_are_pinned() {
     );
 }
 
-/// The fixture both serializer pins use. `crates/mimo-service-runtime`'s
+/// The fixture both serializer pins use. `crates/nyanpasu-service-runtime`'s
 /// `ws_core_log_frames_are_pinned` builds the identical value and asserts the
 /// identical literal: the service writes with `simd_json` and the client reads
 /// with `serde_json`, so a divergence must show up as a diff between two
@@ -649,23 +649,23 @@ fn the_enriched_status_response_is_pinned() {
 fn the_status_log_paths_are_pinned() {
     assert_eq!(
         serde_json::to_string(&LogPathsInfo {
-            service_dir: PathBuf::from("/var/lib/mimo-service/logs"),
-            core_dir: Some(PathBuf::from("/var/lib/mimo-service/core-runtime/logs")),
+            service_dir: PathBuf::from("/var/lib/nyanpasu-service/logs"),
+            core_dir: Some(PathBuf::from("/var/lib/nyanpasu-service/core-runtime/logs")),
         })
         .unwrap(),
         concat!(
-            r#"{"service_dir":"/var/lib/mimo-service/logs","#,
-            r#""core_dir":"/var/lib/mimo-service/core-runtime/logs"}"#
+            r#"{"service_dir":"/var/lib/nyanpasu-service/logs","#,
+            r#""core_dir":"/var/lib/nyanpasu-service/core-runtime/logs"}"#
         )
     );
     // Sink disabled: the key is omitted, not null.
     assert_eq!(
         serde_json::to_string(&LogPathsInfo {
-            service_dir: PathBuf::from("/var/lib/mimo-service/logs"),
+            service_dir: PathBuf::from("/var/lib/nyanpasu-service/logs"),
             core_dir: None,
         })
         .unwrap(),
-        r#"{"service_dir":"/var/lib/mimo-service/logs"}"#
+        r#"{"service_dir":"/var/lib/nyanpasu-service/logs"}"#
     );
 }
 

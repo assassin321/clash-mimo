@@ -55,7 +55,7 @@ impl From<LocalIpcPolicyArg> for nyanpasu_core_manager::LocalIpcPolicy {
 /// It is useful for testing and debugging service rpc calls.
 #[derive(Parser)]
 #[command(
-    name = "mimo-service",
+    name = "nyanpasu-service",
     version,
     author,
     about,
@@ -269,7 +269,7 @@ mod tests {
     /// the change is breaking and must be reverted, not "fixed" here.
     const LEGACY_INVOCATIONS: &[&[&str]] = &[
         &[
-            "mimo-service",
+            "nyanpasu-service",
             "install",
             "--user",
             "alice",
@@ -280,12 +280,12 @@ mod tests {
             "--nyanpasu-app-dir",
             "app",
         ],
-        &["mimo-service", "uninstall"],
-        &["mimo-service", "start"],
-        &["mimo-service", "stop"],
-        &["mimo-service", "restart"],
+        &["nyanpasu-service", "uninstall"],
+        &["nyanpasu-service", "start"],
+        &["nyanpasu-service", "stop"],
+        &["nyanpasu-service", "restart"],
         &[
-            "mimo-service",
+            "nyanpasu-service",
             "server",
             "--nyanpasu-config-dir",
             "config",
@@ -299,7 +299,7 @@ mod tests {
         // service definition containing it — which is what
         // `the_server_local_ipc_policy_defaults_to_disable` pins.
         &[
-            "mimo-service",
+            "nyanpasu-service",
             "server",
             "--nyanpasu-data-dir",
             "data",
@@ -309,18 +309,18 @@ mod tests {
             "app",
             "--service",
         ],
-        &["mimo-service", "status"],
-        &["mimo-service", "status", "--json"],
-        &["mimo-service", "status", "--skip-service-check"],
+        &["nyanpasu-service", "status"],
+        &["nyanpasu-service", "status", "--json"],
+        &["nyanpasu-service", "status", "--skip-service-check"],
         &[
-            "mimo-service",
+            "nyanpasu-service",
             "status",
             "--json",
             "--skip-service-check",
         ],
-        &["mimo-service", "update"],
+        &["nyanpasu-service", "update"],
         &[
-            "mimo-service",
+            "nyanpasu-service",
             "rpc",
             "start-core",
             "--core-type",
@@ -328,28 +328,28 @@ mod tests {
             "--config-file",
             "config.yaml",
         ],
-        &["mimo-service", "rpc", "stop-core"],
-        &["mimo-service", "rpc", "inspect-logs"],
-        &["mimo-service", "rpc", "set-dns"],
-        &["mimo-service", "rpc", "set-dns", "1.1.1.1", "8.8.8.8"],
-        &["mimo-service", "-V"],
-        &["mimo-service", "--verbose"],
-        &["mimo-service", "-v"],
-        &["mimo-service", "--version"],
+        &["nyanpasu-service", "rpc", "stop-core"],
+        &["nyanpasu-service", "rpc", "inspect-logs"],
+        &["nyanpasu-service", "rpc", "set-dns"],
+        &["nyanpasu-service", "rpc", "set-dns", "1.1.1.1", "8.8.8.8"],
+        &["nyanpasu-service", "-V"],
+        &["nyanpasu-service", "--verbose"],
+        &["nyanpasu-service", "-v"],
+        &["nyanpasu-service", "--version"],
     ];
 
     /// Everything S5 adds. All additive: none of these parsed before.
     const NEW_INVOCATIONS: &[&[&str]] = &[
-        &["mimo-service", "status", "--exit-code"],
-        &["mimo-service", "update", "--check"],
-        &["mimo-service", "update", "--from", "candidate.exe"],
-        &["mimo-service", "completions", "bash"],
-        &["mimo-service", "completions", "zsh"],
-        &["mimo-service", "completions", "fish"],
-        &["mimo-service", "completions", "powershell"],
-        &["mimo-service", "completions", "elvish"],
+        &["nyanpasu-service", "status", "--exit-code"],
+        &["nyanpasu-service", "update", "--check"],
+        &["nyanpasu-service", "update", "--from", "candidate.exe"],
+        &["nyanpasu-service", "completions", "bash"],
+        &["nyanpasu-service", "completions", "zsh"],
+        &["nyanpasu-service", "completions", "fish"],
+        &["nyanpasu-service", "completions", "powershell"],
+        &["nyanpasu-service", "completions", "elvish"],
         &[
-            "mimo-service",
+            "nyanpasu-service",
             "rpc",
             "start-core",
             "--core-type",
@@ -358,7 +358,7 @@ mod tests {
             "config.yaml",
         ],
         &[
-            "mimo-service",
+            "nyanpasu-service",
             "rpc",
             "check-config",
             "--core-type",
@@ -368,7 +368,7 @@ mod tests {
         ],
         // The exact argv `install` writes after S10.
         &[
-            "mimo-service",
+            "nyanpasu-service",
             "server",
             "--nyanpasu-data-dir",
             "data",
@@ -381,7 +381,7 @@ mod tests {
             "--service",
         ],
         &[
-            "mimo-service",
+            "nyanpasu-service",
             "install",
             "--user",
             "alice",
@@ -426,7 +426,7 @@ mod tests {
     /// prints the help. `-V` must still reach the no-command arm.
     #[test]
     fn a_bare_invocation_asks_for_help() {
-        let err = Cli::try_parse_from(["mimo-service"])
+        let err = Cli::try_parse_from(["nyanpasu-service"])
             .err()
             .expect("a bare invocation must fail");
         assert_eq!(
@@ -438,7 +438,7 @@ mod tests {
     /// `help` is clap-provided and must survive the required-help change.
     #[test]
     fn the_help_subcommand_still_prints_help() {
-        let err = Cli::try_parse_from(["mimo-service", "help"])
+        let err = Cli::try_parse_from(["nyanpasu-service", "help"])
             .err()
             .expect("help must not parse into a command");
         assert_eq!(err.kind(), clap::error::ErrorKind::DisplayHelp);
@@ -448,12 +448,12 @@ mod tests {
     /// convention, and deliberately kept until the GUI-coordinated CLI v2.
     #[test]
     fn the_legacy_short_flags_keep_their_meaning() {
-        let verbose = Cli::try_parse_from(["mimo-service", "-V"]).unwrap();
+        let verbose = Cli::try_parse_from(["nyanpasu-service", "-V"]).unwrap();
         assert!(verbose.verbose);
         assert!(!verbose.version);
         assert!(verbose.command.is_none());
 
-        let version = Cli::try_parse_from(["mimo-service", "-v"]).unwrap();
+        let version = Cli::try_parse_from(["nyanpasu-service", "-v"]).unwrap();
         assert!(version.version);
         assert!(!version.verbose);
         assert!(version.command.is_none());
@@ -507,14 +507,14 @@ mod tests {
             is_unprivileged(&cli.command)
         }
 
-        assert!(unprivileged(&["mimo-service", "status"]));
-        assert!(unprivileged(&["mimo-service", "rpc", "stop-core"]));
-        assert!(unprivileged(&["mimo-service", "completions", "bash"]));
-        assert!(unprivileged(&["mimo-service", "update", "--check"]));
+        assert!(unprivileged(&["nyanpasu-service", "status"]));
+        assert!(unprivileged(&["nyanpasu-service", "rpc", "stop-core"]));
+        assert!(unprivileged(&["nyanpasu-service", "completions", "bash"]));
+        assert!(unprivileged(&["nyanpasu-service", "update", "--check"]));
         #[cfg(unix)]
         {
             let mut args = vec![
-                "mimo-service",
+                "nyanpasu-service",
                 "update",
                 "--user",
                 "alice",
@@ -525,15 +525,15 @@ mod tests {
             args.push("--check");
             assert!(unprivileged(&args));
         }
-        assert!(unprivileged(&["mimo-service", "-V"]));
+        assert!(unprivileged(&["nyanpasu-service", "-V"]));
 
-        assert!(!unprivileged(&["mimo-service", "update"]));
-        assert!(!unprivileged(&["mimo-service", "start"]));
-        assert!(!unprivileged(&["mimo-service", "stop"]));
-        assert!(!unprivileged(&["mimo-service", "restart"]));
-        assert!(!unprivileged(&["mimo-service", "uninstall"]));
+        assert!(!unprivileged(&["nyanpasu-service", "update"]));
+        assert!(!unprivileged(&["nyanpasu-service", "start"]));
+        assert!(!unprivileged(&["nyanpasu-service", "stop"]));
+        assert!(!unprivileged(&["nyanpasu-service", "restart"]));
+        assert!(!unprivileged(&["nyanpasu-service", "uninstall"]));
         assert!(!unprivileged(&[
-            "mimo-service",
+            "nyanpasu-service",
             "install",
             "--user",
             "alice",
@@ -545,7 +545,7 @@ mod tests {
             "app",
         ]));
         assert!(!unprivileged(&[
-            "mimo-service",
+            "nyanpasu-service",
             "server",
             "--nyanpasu-config-dir",
             "config",
@@ -573,7 +573,7 @@ mod tests {
     fn the_server_local_ipc_policy_defaults_to_disable() {
         assert_eq!(
             server_policy(&[
-                "mimo-service",
+                "nyanpasu-service",
                 "server",
                 "--nyanpasu-data-dir",
                 "data",
@@ -608,7 +608,7 @@ mod tests {
         ];
         for (value, arg, manager) in cases {
             let argv = [
-                "mimo-service",
+                "nyanpasu-service",
                 "server",
                 "--nyanpasu-data-dir",
                 "data",
@@ -624,7 +624,7 @@ mod tests {
         }
         assert!(
             Cli::try_parse_from([
-                "mimo-service",
+                "nyanpasu-service",
                 "server",
                 "--nyanpasu-data-dir",
                 "data",
@@ -652,7 +652,7 @@ mod tests {
         ] {
             let value = super::install::policy_value(arg);
             let argv = [
-                "mimo-service",
+                "nyanpasu-service",
                 "server",
                 "--nyanpasu-data-dir",
                 "data",

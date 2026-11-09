@@ -124,14 +124,14 @@ mod macos {
         use super::*;
 
         fn label() -> ServiceLabel {
-            "moe.elaina.mimo-service".parse().unwrap()
+            "moe.elaina.nyanpasu-service".parse().unwrap()
         }
 
         #[test]
         fn builds_system_bootout_command() {
             assert_eq!(
                 bootout_args(&label()),
-                ["bootout", "system/moe.elaina.mimo-service"]
+                ["bootout", "system/moe.elaina.nyanpasu-service"]
                     .map(OsString::from)
                     .to_vec()
             );
@@ -144,7 +144,7 @@ mod macos {
                 [
                     "bootstrap",
                     "system",
-                    "/Library/LaunchDaemons/moe.elaina.mimo-service.plist",
+                    "/Library/LaunchDaemons/moe.elaina.nyanpasu-service.plist",
                 ]
                 .map(OsString::from)
                 .to_vec()

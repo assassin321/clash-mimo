@@ -51,7 +51,7 @@ mod tests {
     fn service_binary_is_the_installed_system_binary() {
         assert_eq!(
             service_binary_path(),
-            PathBuf::from("/usr/bin/mimo-service")
+            PathBuf::from("/usr/bin/nyanpasu-service")
         );
     }
 
@@ -60,7 +60,7 @@ mod tests {
     fn service_binary_stays_in_the_service_data_directory() {
         assert_eq!(
             service_binary_path(),
-            service_data_dir().join(format!("mimo-service{}", std::env::consts::EXE_SUFFIX))
+            service_data_dir().join(format!("nyanpasu-service{}", std::env::consts::EXE_SUFFIX))
         );
     }
 }

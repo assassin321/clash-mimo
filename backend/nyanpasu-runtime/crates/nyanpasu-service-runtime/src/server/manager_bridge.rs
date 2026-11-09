@@ -53,7 +53,7 @@ const MAX_OPERATION_WAIT_MS: u64 = 90_000;
 const CORE_SHUTDOWN_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(90);
 
 /// Legacy wire strings the GUI branches on. These are protocol, not
-/// diagnostics: changing any of them is a breaking change to clash-mimo.
+/// diagnostics: changing any of them is a breaking change to clash-nyanpasu.
 pub(crate) const MSG_CORE_ALREADY_RUNNING: &str = "core is already running";
 pub(crate) const MSG_CORE_ALREADY_STOPPED: &str = "core is already stopped";
 pub(crate) const MSG_CORE_NOT_STARTED: &str = "core have not been started yet";
@@ -204,7 +204,7 @@ impl CoreManagerService {
             #[cfg(unix)]
             controller_template: Some(format!("core-{namespace}-{{epoch}}.sock")),
             #[cfg(windows)]
-            controller_template: Some(format!(r"\\.\pipe\mimo-service-{namespace}-{{epoch}}")),
+            controller_template: Some(format!(r"\\.\pipe\nyanpasu-service-{namespace}-{{epoch}}")),
             runtime_dir: Some(runtime_dir),
             windows_shutdown_helper: Some(std::env::current_exe()?),
             local_ipc_policy,

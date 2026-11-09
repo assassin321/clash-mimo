@@ -71,7 +71,7 @@ impl TestEnv {
             logs: nyanpasu_logging::LogsClient::start(
                 Arc::new(nyanpasu_logging::FsLogFiles::new(
                     root.join("service-logs"),
-                    "mimo-service".into(),
+                    "nyanpasu-service".into(),
                 )),
                 Arc::new(nyanpasu_logging::MonotonicClock::default()),
             )
@@ -95,7 +95,7 @@ async fn viewer_rpc_reads_files_and_scopes_sessions() {
     let directory = env._dir.path().join("service-logs");
     std::fs::create_dir_all(&directory).unwrap();
     std::fs::write(
-        directory.join("mimo-service.2026-09-11.app.log"),
+        directory.join("nyanpasu-service.2026-09-11.app.log"),
         b"{\"level\":\"INFO\",\"fields\":{\"message\":\"service own log\"}}\n",
     )
     .unwrap();

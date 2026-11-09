@@ -55,7 +55,7 @@ pub async fn run(
     let logs = nyanpasu_logging::LogsClient::start(
         Arc::new(nyanpasu_logging::FsLogFiles::new(
             crate::utils::dirs::service_logs_dir(),
-            "mimo-service".into(),
+            "nyanpasu-service".into(),
         )),
         Arc::new(nyanpasu_logging::MonotonicClock::default()),
     )

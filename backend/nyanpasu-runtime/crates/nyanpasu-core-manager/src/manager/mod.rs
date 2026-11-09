@@ -11,6 +11,7 @@ mod switching;
 use std::sync::Arc;
 
 use enumset::EnumSet;
+use nyanpasu_utils::process::AtomicStopStrategy;
 use serde_yaml_ng::Mapping;
 use tokio::sync::{broadcast, watch};
 
@@ -33,7 +34,7 @@ use crate::{
 };
 
 use publish::instance_core_state;
-use quarantine::{reject_quarantine, sweep_orphans};
+use quarantine::{quarantine_error, reject_quarantine, sweep_orphans};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum DegradeReason {
@@ -107,6 +108,7 @@ pub struct CoreManagerBuilder {
     dns: Option<Arc<dyn DnsController>>,
     controller_access: Option<Arc<dyn crate::ControllerAccess>>,
     native_store: Option<Arc<dyn crate::native_store::NativeStore>>,
+    stop_strategy: Option<Arc<AtomicStopStrategy>>,
 }
 
 struct Inner {
@@ -123,9 +125,8 @@ struct Inner {
     /// keep receiving across restarts and core switches.
     log_tx: broadcast::Sender<Arc<LogFrame>>,
     version_cache: VersionCache,
-    /// `Some` while the JSONL sink is running. `None` means the caller turned it
-    /// off, and there is deliberately no path to report — nothing will ever
-    /// appear there.
+    /// `Some` while the JSONL sink is running. `None` when disabled by the
+    /// caller or by an invalid log filesystem node at construction.
     log_dir: Option<camino::Utf8PathBuf>,
     /// Dropping the manager without calling `shutdown()` abandons at most the
     /// final batch. This is diagnostic data and best-effort by design;
@@ -281,6 +282,14 @@ impl CoreManagerBuilder {
         self
     }
 
+    /// Shares the host's stop strategy with every supervisor in the default process backend.
+    /// Updates apply to both running and future instances. Without this setting,
+    /// supervisors use the default graceful stop strategy.
+    pub fn stop_strategy(mut self, strategy: Arc<AtomicStopStrategy>) -> Self {
+        self.stop_strategy = Some(strategy);
+        self
+    }
+
     pub async fn build(self) -> Result<CoreManager, Error> {
         CoreManager::build_configured(self).await
     }
@@ -295,6 +304,7 @@ impl CoreManager {
             dns: None,
             controller_access: None,
             native_store: None,
+            stop_strategy: None,
         }
     }
 
@@ -310,6 +320,7 @@ impl CoreManager {
             dns,
             controller_access,
             native_store,
+            stop_strategy,
         } = builder;
         let runtime_dir = options
             .runtime_dir
@@ -351,25 +362,56 @@ impl CoreManager {
                 "log_max_files must be greater than zero".into(),
             ));
         }
-        let max_epoch = sweep_orphans(&store, &options).await?;
+        let (max_epoch, quarantine) = sweep_orphans(&store, &options).await?;
+        let mut ctrl = Ctrl::new(max_epoch);
+        ctrl.quarantine = quarantine;
+        let startup_quarantine = quarantine_error(&ctrl);
         dns_sync::reconcile_orphan_record(&store, dns.as_deref(), options.dns_timeout).await;
         let (status_tx, _) = watch::channel(CoreStatus::initial());
         let (log_tx, _) = broadcast::channel(LOG_CHANNEL_CAPACITY);
         // Subscribed here rather than inside the task, and before any instance
         // can exist, so the sink cannot miss the start-up burst.
         let (log_dir, log_sink) = if options.log_sink_enabled {
-            let dir = log_sink::prepare_dir(store.dir()).await?;
-            let handle = log_sink::spawn(
-                dir.clone(),
-                SinkOptions {
-                    max_bytes: options.log_max_bytes,
-                    max_files: options.log_max_files,
-                },
-                log_tx.subscribe(),
-                options.cancel_token.child_token(),
-            )
-            .await?;
-            (Some(dir), Some(handle))
+            let prepared = async {
+                let dir = log_sink::prepare_dir(store.dir()).await?;
+                let handle = log_sink::spawn(
+                    dir.clone(),
+                    SinkOptions {
+                        max_bytes: options.log_max_bytes,
+                        max_files: options.log_max_files,
+                    },
+                    log_tx.subscribe(),
+                    options.cancel_token.child_token(),
+                )
+                .await?;
+                Ok::<_, Error>((Some(dir), Some(handle)))
+            }
+            .await;
+            match prepared {
+                Ok(sink) => sink,
+                Err(error) => {
+                    let path = match &error {
+                        Error::UnsafeRuntimeArtifact(path) => path,
+                        Error::LogSinkIo { path, source }
+                            if matches!(
+                                source.kind(),
+                                std::io::ErrorKind::IsADirectory
+                                    | std::io::ErrorKind::NotADirectory
+                            ) =>
+                        {
+                            path
+                        }
+                        _ => return Err(error),
+                    };
+                    tracing::warn!(
+                        %path,
+                        %error,
+                        action = "disabled disk logging; memory log broadcast remains available",
+                        "invalid core log filesystem node"
+                    );
+                    (None, None)
+                }
+            }
         } else {
             (None, None)
         };
@@ -380,9 +422,10 @@ impl CoreManager {
                 options.cancel_token.clone(),
                 native_store.clone(),
                 options.windows_shutdown_helper.clone(),
+                stop_strategy,
             ))
         });
-        Ok(Self {
+        let manager = Self {
             inner: Arc::new(Inner {
                 options,
                 backend,
@@ -391,7 +434,7 @@ impl CoreManager {
                 controller_access,
                 native_store,
                 store,
-                ctrl: tokio::sync::Mutex::new(Ctrl::new(max_epoch)),
+                ctrl: tokio::sync::Mutex::new(ctrl),
                 status_tx,
                 log_tx,
                 version_cache: VersionCache::default(),
@@ -399,7 +442,11 @@ impl CoreManager {
                 log_sink: tokio::sync::Mutex::new(log_sink),
                 _runtime_lock: runtime_lock,
             }),
-        })
+        };
+        if let Some(error) = startup_quarantine {
+            manager.publish_terminal_error(&error);
+        }
+        Ok(manager)
     }
 
     pub fn subscribe(&self) -> watch::Receiver<CoreStatus> {
@@ -767,6 +814,10 @@ impl CoreManager {
     /// its forwarder, prove the process dead. Publishes nothing and latches no
     /// quarantine — an unproven stop comes back as [`RetireFailure`] for the
     /// caller to place in its own sequence.
+    #[expect(
+        clippy::result_large_err,
+        reason = "a failed stop is destructured by its caller at once; boxing buys nothing"
+    )]
     async fn retire_current(&self, ctrl: &mut Ctrl) -> Result<Option<EpochPlan>, RetireFailure> {
         let Some(Active {
             instance,
