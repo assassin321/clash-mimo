@@ -28,7 +28,7 @@
 
 | 来源                      | 内容                                                                                                                                                     | 原因                                                             |
 | ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
-| `app_config_dir` 整个目录 | `nyanpasu-config.yaml`、`application.yaml`、`clash-config.yaml`、`session-state.yaml`、`profiles.yaml`、`profiles/`、`migration-state.yaml`、`icons/` 等 | 迁移模块改写的文件都在这里；整目录复制，新增模块无需维护文件清单 |
+| `app_config_dir` 整个目录 | `mimo-config.yaml`、`application.yaml`、`clash-config.yaml`、`session-state.yaml`、`profiles.yaml`、`profiles/`、`migration-state.yaml`、`icons/` 等 | 迁移模块改写的文件都在这里；整目录复制，新增模块无需维护文件清单 |
 | `app_data_dir/storage.db` | 键值存储                                                                                                                                                 | `storage` 模块会读写它                                           |
 
 - 若 `app_data_dir` 与 `app_config_dir` 相同或位于其下（例如便携模式），复制配置目录时排除 `backups/`，避免把备份复制进备份；同时排除 `storage.db`、`jobs.redb`、`logs/`、`cache/`、`scripts/` 和 `clash.pid`。它们属于数据目录而非配置，`storage.db` 由单独的来源处理，其余是非目标中明确不备份的运行期数据；`storage.db` 与 `jobs.redb` 在应用运行时还被 redb 锁住，直接复制会在 Windows 上失败。

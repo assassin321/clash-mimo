@@ -237,7 +237,7 @@ flowchart TB
     E3 --> G
     E4 --> G["required effects: diff(before, after) ∩ {AutoLaunch, SystemProxy, ProxyGuard, Hotkeys}<br/>executor.try_apply → EffectsCheckpoint"]
     G --> H["Ack::Ok → AwaitDecision"]
-    H --> I["写 nyanpasu-config.yaml → CAS"]
+    H --> I["写 mimo-config.yaml → CAS"]
     I --> J["Confirm: 产物发布 / store / 端口确认 / mirror.apply()（既有，post-commit）<br/>post_commit: Locale/Logger/Widget/Tray"]
     E1 -->|"RolledBack / Err"| X["Ack::Rejected：core 未换，配置未保存"]
     E2 -->|"handoff 失败"| X2["Cancel: 回到原宿主并确认"]

@@ -889,11 +889,11 @@ mod tests {
         std::fs::create_dir_all(&config_dir).unwrap();
         std::fs::create_dir_all(&data_dir).unwrap();
 
-        let config_path = config_dir.join("nyanpasu-config.yaml");
+        let config_path = config_dir.join("mimo-config.yaml");
         let profiles_path = config_dir.join("profiles.yaml");
         std::fs::write(
             &config_path,
-            include_str!("fixtures/v1_6_1/nyanpasu-config.yaml"),
+            include_str!("fixtures/v1_6_1/mimo-config.yaml"),
         )
         .unwrap();
         std::fs::write(
@@ -909,7 +909,7 @@ mod tests {
 
         assert_yaml_shape_eq(
             config_path,
-            include_str!("fixtures/v2_0_expected/nyanpasu-config.yaml"),
+            include_str!("fixtures/v2_0_expected/mimo-config.yaml"),
         );
 
         // The script migration re-prefixes profiles.yaml; the header is part of
@@ -979,8 +979,8 @@ mod tests {
         std::fs::create_dir_all(&config_dir).unwrap();
         std::fs::create_dir_all(&data_dir).unwrap();
 
-        let legacy_raw = include_str!("fixtures/v1_6_1/nyanpasu-config.yaml");
-        std::fs::write(config_dir.join("nyanpasu-config.yaml"), legacy_raw).unwrap();
+        let legacy_raw = include_str!("fixtures/v1_6_1/mimo-config.yaml");
+        std::fs::write(config_dir.join("mimo-config.yaml"), legacy_raw).unwrap();
         std::fs::write(
             config_dir.join("profiles.yaml"),
             include_str!("fixtures/v1_6_1/profiles.yaml"),
@@ -2174,7 +2174,7 @@ tray_menu_close_behavior: hide
             let case = Self::empty();
             std::fs::write(
                 case.ctx.nyanpasu_config_path(),
-                include_str!("fixtures/v1_6_1/nyanpasu-config.yaml"),
+                include_str!("fixtures/v1_6_1/mimo-config.yaml"),
             )
             .unwrap();
             std::fs::write(
@@ -2269,8 +2269,8 @@ tray_menu_close_behavior: hide
         assert_eq!(runner.backup.as_ref().unwrap().name, backups[0]);
         let config = case.backups_dir().join(&backups[0]).join("config");
         assert_eq!(
-            std::fs::read_to_string(config.join("nyanpasu-config.yaml")).unwrap(),
-            include_str!("fixtures/v1_6_1/nyanpasu-config.yaml")
+            std::fs::read_to_string(config.join("mimo-config.yaml")).unwrap(),
+            include_str!("fixtures/v1_6_1/mimo-config.yaml")
         );
         assert_eq!(
             std::fs::read_to_string(config.join("profiles.yaml")).unwrap(),
@@ -2341,7 +2341,7 @@ tray_menu_close_behavior: hide
         assert!(matches!(error, Error::CreateBackup { .. }), "{error:#}");
         assert_eq!(
             std::fs::read_to_string(case.ctx.nyanpasu_config_path()).unwrap(),
-            include_str!("fixtures/v1_6_1/nyanpasu-config.yaml")
+            include_str!("fixtures/v1_6_1/mimo-config.yaml")
         );
         assert_eq!(
             std::fs::read_to_string(case.ctx.profiles_path()).unwrap(),

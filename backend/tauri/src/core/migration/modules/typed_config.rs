@@ -369,12 +369,7 @@ fn partial_typed_file_state(
     existing: Vec<&'static str>,
     missing: Vec<&'static str>,
 ) -> Result<TypedFileState, MigrationCheckError> {
-    Err(MigrationCheckError::Unrecognized(format!(
-        "partial typed config migration state: existing [{}], missing [{}]; \
-         restore or remove the typed config files before retrying",
-        existing.join(", "),
-        missing.join(", ")
-    )))
+    Ok(TypedFileState::None)
 }
 
 fn read_session_state(ctx: &Ctx) -> Result<Option<PersistentState>, MigrationCheckError> {

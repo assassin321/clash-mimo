@@ -130,7 +130,7 @@ fn native_store_for_host(runtime: &RuntimeInfos) -> anyhow::Result<FsNativeStore
     let config_path = if config_path.try_exists()? {
         config_path
     } else {
-        runtime.nyanpasu_config_dir.join("nyanpasu-config.yaml")
+        runtime.nyanpasu_config_dir.join("mimo-config.yaml")
     };
     Ok(FsNativeStore::new(
         data_dir,
@@ -231,7 +231,7 @@ mod tests {
         let typed = runtime.nyanpasu_config_dir.join("application.yaml");
         std::fs::write(&typed, "core: mihomo\n").unwrap();
         std::fs::write(
-            runtime.nyanpasu_config_dir.join("nyanpasu-config.yaml"),
+            runtime.nyanpasu_config_dir.join("mimo-config.yaml"),
             "invalid: [",
         )
         .unwrap();

@@ -28,7 +28,7 @@ mod platform;
 pub mod registry;
 
 pub const CLASH_CFG_GUARD_OVERRIDES: &str = "clash-guard-overrides.yaml";
-pub const NYANPASU_CONFIG: &str = "nyanpasu-config.yaml";
+pub const NYANPASU_CONFIG: &str = "mimo-config.yaml";
 pub const PROFILE_YAML: &str = "profiles.yaml";
 pub const STORAGE_DB: &str = "storage.db";
 

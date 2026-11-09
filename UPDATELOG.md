@@ -1,3 +1,37 @@
+## v1.6.8
+
+### Features
+
+- **config:** Add the mips TUN stack and its congestion controller
+
+- **config:** Decide the TUN stack from each core's config features
+
+- **settings:** Offer the TUN stacks and mips options the core reads
+
+- **startup:** Report failures in a dialog instead of panicking
+
+- **windows:** Bundle the Windows App SDK bootstrapper with enableLoopback
+
+### Bug Fixes
+
+- **jobs:** Rebuild an unusable jobs journal instead of failing to start
+
+- **service:** Require service 2.0.2
+
+- **startup:** Handle environment failures before and around setup
+
+- **startup:** Rebuild corrupt local data instead of failing to start
+
+- Align update link with header menu
+
+- Prevent logo animation edge artifacts
+
+- Prevent page title artifacts while scrolling
+
+- Prevent sparkline stretching on new peaks
+
+---
+
 ## v1.4.2
 
 ### Features

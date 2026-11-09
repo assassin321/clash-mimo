@@ -352,7 +352,7 @@ fn close_override(&self, settings: &WindowCloseSettings) -> WindowCloseOverride;
 
 #### 配置迁移
 
-应用真正读写的配置文件是 `application.yaml`（`ApplicationClient`），不是 `nyanpasu-config.yaml`：后者是 2.0 前的遗留文件，只作为 `typed_config` 迁移的输入，`app_config` 模块只改它。`app_config` 是冻结的启发式模块（`migration/mod.rs` 的 `ModuleKind` 说明，`registry.rs` 的冻结测试），不能再加步骤。所以：
+应用真正读写的配置文件是 `application.yaml`（`ApplicationClient`），不是 `mimo-config.yaml`：后者是 2.0 前的遗留文件，只作为 `typed_config` 迁移的输入，`app_config` 模块只改它。`app_config` 是冻结的启发式模块（`migration/mod.rs` 的 `ModuleKind` 说明，`registry.rs` 的冻结测试），不能再加步骤。所以：
 
 - #5646 新增 Document 类型的迁移模块 `application`，管理 `application.yaml`，并像 `profiles.yaml`（#5364）一样盖章：应用经 `StampedYamlFormat` 读写；`unstamped_ceiling` 为 0；`typed_config` 创建文件时直接盖在模块当前的 revision，所以新装和 1.x 转换的结果落在正确的 revision，没有“头部 revision 却没有戳”的窗口。#5646 本身没有步骤。
 - #5649 加入步骤 `application/window_close`（revision 1）：如果存在 `tray_menu_close_behavior`，就写入 `window_close.tray_menu`，按 `hide → hide`、`close → destroy` 转换，其余字段取默认值，删除旧键，与盖戳在同一次原子写入里完成。未知的旧值使步骤失败。

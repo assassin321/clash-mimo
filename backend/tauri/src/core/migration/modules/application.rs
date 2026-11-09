@@ -45,7 +45,7 @@ impl StampedDocument for ApplicationDocument {
 /// How the running app reads and writes `application.yaml`.
 pub type ApplicationFormat = StampedYamlFormat<ApplicationDocument>;
 
-/// The typed application config. The legacy `nyanpasu-config.yaml` that the
+/// The typed application config. The legacy `mimo-config.yaml` that the
 /// `app_config` module edits is only an input of `typed_config`, which creates
 /// this file.
 pub struct ApplicationMigrator;
