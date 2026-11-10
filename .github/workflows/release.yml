@@ -1,0 +1,182 @@
+name: '[Release] Full Pipeline'
+
+on:
+  push:
+    tags:
+      - 'v[0-9]*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: '要发布的 tag（如 v1.0.0）'
+        required: true
+        type: string
+
+concurrency:
+  group: release-publication
+  cancel-in-progress: false
+
+env:
+  CARGO_INCREMENTAL: 0
+  RUST_BACKTRACE: short
+
+jobs:
+  prepare:
+    name: Create Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      discussions: write
+    outputs:
+      tag: ${{ steps.meta.outputs.tag }}
+      version: ${{ steps.meta.outputs.version }}
+      prerelease: ${{ steps.meta.outputs.prerelease }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Resolve tag & version
+        id: meta
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG="${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}"
+          [[ "$TAG" == v* ]] || { echo "::error::tag 必须以 v 开头，收到 $TAG"; exit 1; }
+          VERSION="${TAG#v}"
+          # tag 必须真的存在，避免手滑打错
+          git rev-parse -q --verify "refs/tags/$TAG" >/dev/null \
+            || { echo "::error::tag $TAG 在仓库中不存在"; exit 1; }
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          if [[ "$VERSION" == *-* ]]; then echo "prerelease=true" >> $GITHUB_OUTPUT
+          else echo "prerelease=false" >> $GITHUB_OUTPUT; fi
+
+      - name: Test release versioning
+        run: deno task test:release
+
+      - uses: taiki-e/install-action@git-cliff
+        with:
+          tool: git-cliff
+
+      - name: Generate changelog
+        id: changelog
+        shell: bash
+        env:
+          GITHUB_REPO: ${{ github.repository }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -eo pipefail
+          TAG=${{ steps.meta.outputs.tag }}
+          if [ '${{ steps.meta.outputs.prerelease }}' = 'false' ]; then
+            LAST_STABLE=$(git describe --tags --abbrev=0 --match 'v[0-9]*' --exclude '*-*' HEAD)
+            git-cliff --config cliff.toml --strip header --ignore-tags 'v.*-.*' \
+              --tag "$TAG" "$LAST_STABLE..HEAD" > /tmp/changelog.md
+          else
+            git-cliff --config cliff.toml --strip header --unreleased --tag "$TAG" > /tmp/changelog.md
+          fi
+          [ -s /tmp/changelog.md ] || { echo "::error::changelog 为空"; exit 1; }
+          { echo 'content<<EOF'; cat /tmp/changelog.md; echo EOF; } >> $GITHUB_OUTPUT
+
+      
+      - name: Create published release
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ steps.meta.outputs.tag }}
+          name: Clash Mimo v${{ steps.meta.outputs.version }}
+          body: ${{ steps.changelog.outputs.content }}
+          draft: false
+          prerelease: ${{ steps.meta.outputs.prerelease }}
+          make_latest: ${{ steps.meta.outputs.prerelease == 'false' }}
+          target_commitish: ${{ github.sha }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  windows_build:
+    needs: [prepare]
+    name: Windows Build
+    uses: ./.github/workflows/deps-build-windows-nsis.yaml
+    with:
+      portable: true
+      nightly: false
+      bundle-type: 'both'
+      arch: 'x86_64'
+      tag: ${{ needs.prepare.outputs.tag }}
+    secrets: inherit
+
+  windows_aarch64_build:
+    needs: [prepare]
+    name: Windows aarch64 Build
+    uses: ./.github/workflows/deps-build-windows-nsis.yaml
+    with:
+      portable: true
+      nightly: false
+      bundle-type: 'both'
+      arch: 'aarch64'
+      tag: ${{ needs.prepare.outputs.tag }}
+    secrets: inherit
+
+  linux_build:
+    needs: [prepare]
+    name: Linux Build
+    uses: ./.github/workflows/deps-build-linux.yaml
+    with:
+      nightly: false
+      arch: 'x86_64'
+      tag: ${{ needs.prepare.outputs.tag }}
+    secrets: inherit
+
+  linux_aarch64_build:
+    needs: [prepare]
+    name: Linux aarch64 Build
+    uses: ./.github/workflows/deps-build-linux.yaml
+    with:
+      nightly: false
+      arch: 'aarch64'
+      tag: ${{ needs.prepare.outputs.tag }}
+    secrets: inherit
+
+  macos_amd64_build:
+    needs: [prepare]
+    name: macOS amd64 Build
+    uses: ./.github/workflows/deps-build-macos.yaml
+    with:
+      nightly: false
+      aarch64: false
+      tag: ${{ needs.prepare.outputs.tag }}
+    secrets: inherit
+
+  macos_aarch64_build:
+    needs: [prepare]
+    name: macOS aarch64 Build
+    uses: ./.github/workflows/deps-build-macos.yaml
+    with:
+      nightly: false
+      aarch64: true
+      tag: ${{ needs.prepare.outputs.tag }}
+    secrets: inherit
+
+  upload_release_assets:
+    needs:
+      [prepare, windows_build, windows_aarch64_build, linux_build,
+       linux_aarch64_build, macos_amd64_build, macos_aarch64_build]
+    name: Upload Release Assets
+    uses: ./.github/workflows/deps-upload-release-assets.yaml
+    permissions:
+      contents: write
+    with:
+      tag: ${{ needs.prepare.outputs.tag }}
+
+  updater:
+    needs: [upload_release_assets]
+    name: Create Updater
+    uses: ./.github/workflows/deps-create-updater.yaml
+    permissions:
+      contents: write
+    secrets: inherit
+    with:
+      nightly: false

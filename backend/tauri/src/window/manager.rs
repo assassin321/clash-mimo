@@ -133,7 +133,6 @@ impl WindowManager {
                 .title(kind.title())
                 .fullscreen(false)
                 .always_on_top(always_on_top)
-                .resizable(config.resizable)
                 .skip_taskbar(config.skip_taskbar)
                 .focused(config.focused_on_create)
                 .disable_drag_drop_handler()
@@ -148,35 +147,32 @@ impl WindowManager {
             builder = builder.max_inner_size(w, h);
         }
 
-        let win_state = &kind.get_window_state(app_handle);
-        match win_state {
-            Some(_) => {
-                builder = builder.inner_size(800., 800.).position(0., 0.);
-            }
-            _ => {
-                let (default_width, default_height) = config.default_size;
+        let (default_width, default_height) = config.default_size;
 
-                #[cfg(target_os = "windows")]
-                {
-                    builder = builder.inner_size(default_width, default_height);
-                }
+        #[cfg(target_os = "windows")]
+        {
+            builder = builder.inner_size(default_width, default_height);
+        }
 
-                #[cfg(target_os = "macos")]
-                {
-                    // macOS has slightly different height due to title bar
-                    builder = builder.inner_size(default_width, default_height + 6.0);
-                }
+        #[cfg(target_os = "macos")]
+        {
+            // macOS has slightly different height due to title bar
+            builder = builder.inner_size(default_width, default_height + 6.0);
+        }
 
-                #[cfg(target_os = "linux")]
-                {
-                    builder = builder.inner_size(default_width, default_height + 6.0);
-                }
+        #[cfg(target_os = "linux")]
+        {
+            builder = builder.inner_size(default_width, default_height + 6.0);
+        }
 
-                if config.center {
-                    builder = builder.center();
-                }
-            }
-        };
+        // 固定窗口大小，不允许调整
+        builder = builder
+            .min_inner_size(default_width, default_height)
+            .max_inner_size(default_width, default_height);
+
+        if config.center {
+            builder = builder.center();
+        }
 
         let builder = engine::configure_builder(builder);
 
@@ -226,74 +222,9 @@ impl WindowManager {
         // forgotten.
         self.watch(kind, label, &win);
 
-        use tauri::{PhysicalPosition, PhysicalSize};
-
-        if win_state.is_some() {
-            let state = win_state.as_ref().unwrap();
-            let _ = win.set_position(PhysicalPosition {
-                x: state.x,
-                y: state.y,
-            });
-            // Clamp restored size to min_size to prevent 0x0 windows
-            let mut width = state.width;
-            let mut height = state.height;
-            if let Some((min_w, min_h)) = config.min_size {
-                let scale_factor = win.scale_factor().unwrap_or(1.0);
-                let min_w_physical = (min_w * scale_factor) as u32;
-                let min_h_physical = (min_h * scale_factor) as u32;
-                if width < min_w_physical {
-                    width = min_w_physical;
-                }
-                if height < min_h_physical {
-                    height = min_h_physical;
-                }
-            }
-            let _ = win.set_size(PhysicalSize { width, height });
-        }
-
-        if let Some(state) = win_state {
-            if state.maximized {
-                trace_err!(win.maximize(), "set win maximize");
-            }
-            if state.fullscreen {
-                trace_err!(win.set_fullscreen(true), "set win fullscreen");
-            }
-        }
         #[cfg(windows)]
         trace_err!(win.set_shadow(true), "set win shadow");
-        log::trace!("try to calculate the monitor size");
-        let center = (|| -> Result<bool> {
-            let center;
-            if let Some(state) = win_state {
-                let monitor = win.current_monitor()?.ok_or(anyhow::anyhow!(""))?;
-                let PhysicalPosition { x, y } = *monitor.position();
-                let PhysicalSize { width, height } = *monitor.size();
-                let left = x;
-                let right = x + width as i32;
-                let top = y;
-                let bottom = y + height as i32;
-
-                let x = state.x;
-                let y = state.y;
-                let width = state.width as i32;
-                let height = state.height as i32;
-                center = ![
-                    (x, y),
-                    (x + width, y),
-                    (x, y + height),
-                    (x + width, y + height),
-                ]
-                .into_iter()
-                .any(|(x, y)| x >= left && x < right && y >= top && y < bottom);
-            } else {
-                center = true;
-            }
-            Ok(center)
-        })();
-
-        if center.unwrap_or(true) {
-            trace_err!(win.center(), "set win center");
-        }
+        trace_err!(win.center(), "set win center");
 
         #[cfg(debug_assertions)]
         {
