@@ -180,3 +180,5 @@ jobs:
     secrets: inherit
     with:
       nightly: false
+      release_tag: ${{ needs.prepare.outputs.tag }}
+      release_body: ${{ needs.prepare.outputs.release_body }}

@@ -8,6 +8,10 @@ on:
         required: true
         type: boolean
         default: false
+      release_tag:
+        description: 'Tag being released (stable/beta)'
+        required: false
+        type: string
       release_body:
         description: 'Release Body'
         required: false
@@ -18,6 +22,10 @@ on:
         description: 'Nightly'
         required: true
         type: boolean
+      release_tag:
+        description: 'Tag being released'
+        required: false
+        type: string
       release_body:
         description: 'Release Body'
         required: false
@@ -27,11 +35,8 @@ jobs:
   updater:
     name: Update Updater
     runs-on: ubuntu-latest
-    # Runs replace the same assets on the shared `updater` release. Each run
-    # rebuilds its feeds from the current release list, so a newer pending run
-    # may supersede an older one of the same kind.
     concurrency:
-      group: updater-manifests-${{ inputs.nightly }}
+      group: updater-manifests-${{ inputs.nightly }}-${{ inputs.release_tag || github.run_id }}
       cancel-in-progress: false
     permissions:
       contents: write
@@ -39,16 +44,29 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v7
         with:
-          ref: ${{ github.ref }}
-          # blocked by https://github.com/actions/checkout/issues/1467
+          ref: ${{ inputs.release_tag || github.ref }}
+          fetch-depth: 0
+          fetch-tags: true
 
-      - name: Fetch git tags
-        run: git fetch --tags
+      - name: Guard resolved ref
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "HEAD      : $(git rev-parse HEAD)"
+          echo "describe  : $(git describe --tags --always --dirty 2>&1)"
+          echo "tag count : $(git tag | wc -l)"
+          echo "nightly   : ${{ inputs.nightly }}"
+          echo "tag       : ${{ inputs.release_tag }}"
+          if [ "${{ inputs.nightly }}" != "true" ] && [ -z "${{ inputs.release_tag }}" ]; then
+            echo "::error::release_tag 为空：stable/beta 必须由 release 事件触发或显式传入 release_tag"
+            exit 1
+          fi
 
-      - name: Install Node latest
+      - name: Install Node LTS
         uses: actions/setup-node@v7
         with:
-          node-version: latest
+          node-version: 24
+          cache: pnpm
 
       - uses: pnpm/action-setup@v6
         name: Install pnpm
@@ -73,5 +91,5 @@ jobs:
         run: deno task updater
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          RELEASE_TAG: ${{ github.event.release.tag_name }}
-          RELEASE_BODY: ${{ inputs.release_body || github.event.release.body }}
+          RELEASE_TAG: ${{ inputs.release_tag }}
+          RELEASE_BODY: ${{ inputs.release_body }}
