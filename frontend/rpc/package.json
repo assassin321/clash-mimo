@@ -1,6 +1,6 @@
 {
   "name": "@nyanpasu/rpc",
-  "version": "1.6.9",
+  "version": "1.6.8",
   "private": true,
   "type": "module",
   "scripts": {

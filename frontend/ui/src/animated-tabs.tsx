@@ -34,15 +34,10 @@ const containerVariants = cva('relative inline-flex items-stretch', {
       md: 'h-11 text-sm',
       lg: 'h-13 text-base',
     },
-    orientation: {
-      horizontal: '',
-      vertical: 'flex-col',
-    },
   },
   defaultVariants: {
     variant: 'pill',
     size: 'md',
-    orientation: 'horizontal',
   },
 })
 
@@ -263,7 +258,6 @@ export default function AnimatedTabs({
   onChange,
   variant = 'pill',
   size,
-  orientation = 'horizontal',
   className,
 }: {
   activeTab?: string
@@ -273,7 +267,6 @@ export default function AnimatedTabs({
   onChange?: (tabId: string) => void
   variant?: AnimatedTabContainer['variant']
   size?: AnimatedTabContainer['size']
-  orientation?: 'horizontal' | 'vertical'
 }) {
   const shouldReduceMotion = useReducedMotion()
 
@@ -308,33 +301,21 @@ export default function AnimatedTabs({
       )
       let newIndex = currentIndex
 
-      if (orientation === 'horizontal') {
-        if (event.key === 'ArrowRight') {
-          event.preventDefault()
-          newIndex = (currentIndex + 1) % tabElements.length
-        } else if (event.key === 'ArrowLeft') {
-          event.preventDefault()
-          newIndex = (currentIndex - 1 + tabElements.length) % tabElements.length
-        }
-      } else {
-        if (event.key === 'ArrowDown') {
-          event.preventDefault()
-          newIndex = (currentIndex + 1) % tabElements.length
-        } else if (event.key === 'ArrowUp') {
-          event.preventDefault()
-          newIndex = (currentIndex - 1 + tabElements.length) % tabElements.length
-        }
-      }
-
-      if (event.key === 'Home') {
+      if (event.key === 'ArrowRight') {
+        event.preventDefault()
+        newIndex = (currentIndex + 1) % tabElements.length
+      } else if (event.key === 'ArrowLeft') {
+        event.preventDefault()
+        newIndex = (currentIndex - 1 + tabElements.length) % tabElements.length
+      } else if (event.key === 'Home') {
         event.preventDefault()
         newIndex = 0
       } else if (event.key === 'End') {
         event.preventDefault()
         newIndex = tabElements.length - 1
+      } else {
+        return
       }
-
-      if (newIndex === currentIndex) return
 
       const newTabEl = tabElements[newIndex]
       if (newTabEl) {
@@ -343,7 +324,7 @@ export default function AnimatedTabs({
         newTabEl.focus()
       }
     },
-    [handleTabChange, orientation],
+    [handleTabChange],
   )
 
   return (

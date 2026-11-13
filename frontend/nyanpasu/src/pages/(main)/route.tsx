@@ -1,11 +1,12 @@
 import ContextMenuProvider from '@/components/providers/context-menu-provider'
 import NyanpasuUpdateProvider from '@/components/providers/nyanpasu-update-provider'
 import { AnimatedOutletPreset } from '@/components/router/animated-outlet'
+import { useIsMobile } from '@nyanpasu/hooks'
 import { cn } from '@nyanpasu/utils'
 import packageJson from '@root/package.json'
 import { createFileRoute } from '@tanstack/react-router'
 import Header from './_modules/header'
-import Sidebar from './_modules/sidebar'
+import { DefaultNavbar, MobileNavbar } from './_modules/navbar'
 
 export const Route = createFileRoute('/(main)')({
   component: RouteComponent,
@@ -24,13 +25,14 @@ const AppContent = () => {
 }
 
 function RouteComponent() {
+  const isMobile = useIsMobile()
 
   return (
     <NyanpasuUpdateProvider>
       <ContextMenuProvider>
         <div
           className={cn(
-            'flex max-h-dvh min-h-dvh overflow-hidden',
+            'flex max-h-dvh min-h-dvh flex-col overflow-hidden',
             'bg-mixed-background',
           )}
           data-slot="app-root"
@@ -38,15 +40,36 @@ function RouteComponent() {
         >
           <Header className="shrink-0" />
 
-          {/* 左右布局容器 */}
-          <div className="flex flex-1 overflow-hidden">
-            {/* 左侧侧边栏 */}
-            <Sidebar />
+          <div
+            className="flex min-h-0 flex-1 flex-col"
+            data-slot="app-content-container"
+          >
+            {!isMobile && (
+              <div
+                className={cn(
+                  'flex h-12 shrink-0 items-center gap-2 px-3',
+                  'dark:bg-on-primary bg-primary-container',
+                )}
+                data-slot="app-navbar"
+              >
+                <DefaultNavbar />
+              </div>
+            )}
 
-            {/* 内容区域 */}
-            <main className="flex flex-1 flex-col overflow-hidden">
-              <AppContent />
-            </main>
+            <AppContent />
+
+            {isMobile && (
+              <div
+                className={cn(
+                  'flex h-16 shrink-0 items-center gap-2 px-3',
+                  'dark:bg-scrim bg-primary-container',
+                  'justify-between',
+                )}
+                data-slot="app-navbar-mobile"
+              >
+                {isMobile ? <MobileNavbar /> : <DefaultNavbar />}
+              </div>
+            )}
           </div>
         </div>
       </ContextMenuProvider>

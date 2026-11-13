@@ -48,6 +48,11 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
 
+      - name: Debug received inputs
+        run: |
+          echo "release_tag='${{ inputs.release_tag }}'"
+          echo "release_body length=${#RELEASE_BODY}"
+      
       - name: Guard resolved ref
         shell: bash
         run: |

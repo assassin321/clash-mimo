@@ -30,6 +30,7 @@ jobs:
       tag: ${{ steps.meta.outputs.tag }}
       version: ${{ steps.meta.outputs.version }}
       prerelease: ${{ steps.meta.outputs.prerelease }}
+      release_body: ${{ steps.changelog.outputs.content }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -55,6 +56,11 @@ jobs:
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           if [[ "$VERSION" == *-* ]]; then echo "prerelease=true" >> $GITHUB_OUTPUT
           else echo "prerelease=false" >> $GITHUB_OUTPUT; fi
+          
+      - name: Debug meta outputs
+        run: |
+          echo "tag=${{ steps.meta.outputs.tag }}"
+          echo "version=${{ steps.meta.outputs.version }}"
 
       - name: Test release versioning
         run: deno task test:release
@@ -172,7 +178,7 @@ jobs:
       tag: ${{ needs.prepare.outputs.tag }}
 
   updater:
-    needs: [upload_release_assets]
+    needs: [upload_release_assets, prepare]
     name: Create Updater
     uses: ./.github/workflows/deps-create-updater.yaml
     permissions:

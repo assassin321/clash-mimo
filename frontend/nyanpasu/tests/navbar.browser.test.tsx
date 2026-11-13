@@ -7,7 +7,7 @@ import {
   createRouter,
   RouterProvider,
 } from '@tanstack/react-router'
-import Sidebar from '../src/pages/(main)/_modules/sidebar'
+import { DefaultNavbar } from '../src/pages/(main)/_modules/navbar'
 import type { routeTree } from '../src/route-tree.gen'
 
 // The app registers its router in main.tsx, which this project does not
@@ -67,6 +67,7 @@ test('proxies updates re-render only the proxies button', async ({
   proxies.publish(snapshot(0))
 
   const router = createRouter({
+    routeTree: createRootRoute({ component: DefaultNavbar }),
     history: createMemoryHistory({ initialEntries: ['/main/dashboard'] }),
   })
   const container = document.createElement('div')
