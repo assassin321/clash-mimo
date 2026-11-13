@@ -89,6 +89,20 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Debug cwd and file location
+        shell: bash
+        run: |
+          echo "pwd: $(pwd)"
+          echo "---"
+          echo "Root UPDATELOG.md exists: $([ -f UPDATELOG.md ] && echo YES || echo NO)"
+          echo "scripts/UPDATELOG.md exists: $([ -f scripts/UPDATELOG.md ] && echo YES || echo NO)"
+          echo "---"
+          echo "Root ## titles:"
+          grep -n "^##" UPDATELOG.md 2>/dev/null || echo "(no root file)"
+          echo "---"
+          echo "scripts/ ## titles:"
+          grep -n "^##" scripts/UPDATELOG.md 2>/dev/null || echo "(no scripts file)"
+      
       - name: Update Stable and Beta Updaters
         if: ${{ inputs.nightly == false }}
         run: deno task updater
