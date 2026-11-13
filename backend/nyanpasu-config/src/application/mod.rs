@@ -25,8 +25,8 @@ pub use window_close::*;
 #[serde(rename_all = "snake_case")]
 pub enum ProxiesSelectorMode {
     Hidden,
-    #[default]
     Normal,
+    #[default]
     Submenu,
 }
 

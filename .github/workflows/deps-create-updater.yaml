@@ -46,12 +46,10 @@ jobs:
         with:
           ref: ${{ inputs.release_tag || github.ref }}
           fetch-depth: 0
-          fetch-tags: true
 
-      - name: Debug received inputs
-        run: |
-          echo "release_tag='${{ inputs.release_tag }}'"
-          echo "release_body length=${#RELEASE_BODY}"
+      - name: Fetch all tags manually (workaround for actions/checkout#1467)
+        if: ${{ inputs.release_tag != '' }}
+        run: git fetch --tags origin
       
       - name: Guard resolved ref
         shell: bash
@@ -67,16 +65,16 @@ jobs:
             exit 1
           fi
 
+      - uses: pnpm/action-setup@v6
+        name: Install pnpm
+        with:
+          run_install: false
+
       - name: Install Node LTS
         uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: pnpm
-
-      - uses: pnpm/action-setup@v6
-        name: Install pnpm
-        with:
-          run_install: false
 
       - uses: denoland/setup-deno@v2
         with:

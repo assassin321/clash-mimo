@@ -481,7 +481,7 @@ mod tests {
                 max_log_files: 7,
                 max_log_file_size: 10,
                 core_logs: CoreLogSettings::default(),
-                tray_selector_mode: ProxiesSelectorMode::Normal,
+                tray_selector_mode: ProxiesSelectorMode::Submenu,
                 tray_menu_mode: TrayMenuMode::Native,
                 enable_tray_text: false,
                 enable_tray_traffic: false,

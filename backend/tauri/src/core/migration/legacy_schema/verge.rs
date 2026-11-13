@@ -32,8 +32,8 @@ impl Default for ClashCore {
 #[serde(rename_all = "snake_case")]
 pub enum ProxiesSelectorMode {
     Hidden,
-    #[default]
     Normal,
+    #[default]
     Submenu,
 }
 
