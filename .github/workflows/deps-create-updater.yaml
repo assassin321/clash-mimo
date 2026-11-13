@@ -88,20 +88,31 @@ jobs:
         run: deno task updater:nightly
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Debug cwd and file location
+      
+      - name: Diagnose release visibility
         shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "pwd: $(pwd)"
-          echo "---"
-          echo "Root UPDATELOG.md exists: $([ -f UPDATELOG.md ] && echo YES || echo NO)"
-          echo "scripts/UPDATELOG.md exists: $([ -f scripts/UPDATELOG.md ] && echo YES || echo NO)"
-          echo "---"
-          echo "Root ## titles:"
-          grep -n "^##" UPDATELOG.md 2>/dev/null || echo "(no root file)"
-          echo "---"
-          echo "scripts/ ## titles:"
-          grep -n "^##" scripts/UPDATELOG.md 2>/dev/null || echo "(no scripts file)"
+          set -uo pipefail
+          TAG="${{ inputs.release_tag }}"
+          API="https://api.github.com/repos/${{ github.repository }}"
+          HDR=(-H "Authorization: Bearer ${GITHUB_TOKEN}" \
+               -H "Accept: application/vnd.github+json" \
+               -H "X-GitHub-Api-Version: 2022-11-28")
+
+          echo "== tag 在不在远程 =="
+          git ls-remote --tags origin "refs/tags/${TAG}" || true
+
+          echo "== A. by-tag（只认 published）=="
+          curl -sS -o /tmp/a.json -w 'HTTP %{http_code}\n' "${HDR[@]}" "${API}/releases/tags/${TAG}"
+
+          echo "== B. list（含 draft，push 权限可见）=="
+          curl -sS -o /tmp/b.json -w 'HTTP %{http_code}\n' "${HDR[@]}" "${API}/releases?per_page=100"
+          jq -r '.[] | "\(.tag_name)\tdraft=\(.draft)\tprerelease=\(.prerelease)\tassets=\(.assets|length)"' /tmp/b.json 2>/dev/null | head -20
+
+          echo "== C. 同 tag 的 draft 明细 =="
+          jq --arg t "$TAG" '[.[] | select(.tag_name==$t)]' /tmp/b.json 2>/dev/null
       
       - name: Update Stable and Beta Updaters
         if: ${{ inputs.nightly == false }}
